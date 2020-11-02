@@ -1,0 +1,21 @@
+{
+  "name": "datavis2",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "npx serve"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PhilipOe1612340/DataVis2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://datavis2.netlify.app/",
+  "dependencies": {},
+  "devDependencies": {
+    "@types/d3": "^5.16.3",
+    "@types/jquery": "^3.5.4",
+    "serve": "^11.3.2"
+  }
+}
