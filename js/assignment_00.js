@@ -2,10 +2,10 @@
 var d3 = globalThis.d3;
 
 const datasets = [
-    "artificial.csv",
-    "education.csv",
+    "artificial_labeled.csv",
+    "education_labeled.csv",
     "iris_labeled.csv",
-    "mtcars.csv",
+    "mtcars_labeled.csv",
     "wine_labeled.csv"
 ]
 
