@@ -1,30 +1,27 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CI
+name: Convert MD
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
   push:
-    branches: [ master ]
+    paths:
+      - 'doc/**'
   pull_request:
     branches: [ master ]
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+    
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  makepdfs:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Create PDF
-        # You may pin to the exact commit or the version.
-        # uses: mkrakowitzer/actions-makepdfs@4727f3a951582074b33fadc4d2e7ef97ffb4b7ea
-        uses: mkrakowitzer/actions-makepdfs@v1.2
-        with:
-          # Location of markdown files in github repository
-          markdown_dir: 'doc' # default is doc
-          # Location to output PDF files to
-          output_dir: 'pdf' # default is tmp
+    - uses: actions/checkout@v1
+    - uses: mkrakowitzer/actions-makepdfs@master
+      if: github.ref == 'refs/heads/master'
+      with:
+        markdown_dir: doc
+        output_dir: tmp
+    - uses: actions/upload-artifact@v1
+      with:
+        name: platform-architecture-docs
+        path: tmp
