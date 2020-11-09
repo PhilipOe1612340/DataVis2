@@ -1,23 +1,16 @@
-body {
-  background: #7ec2c2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+select {
+  margin: 40px auto;
+  display: block;
 }
 
-div:hover {
-  border-radius: 50px;
-  background: #7ec2c2;
-  box-shadow: inset 32px 32px 64px #6ba5a5, inset -32px -32px 64px #91dfdf;
+option:first-child::selection {
+  background: lightblue;
 }
 
-div {
-  border-radius: 50px;
-  background: linear-gradient(145deg, #71afaf, #87d0d0);
-  box-shadow: 32px 32px 64px #6ba5a5, -32px -32px 64px #91dfdf;
-  width: 190px;
-  height: 190px;
-  padding: 82px 0px 0px 57px;
-  text-transform: uppercase;
-  color: white;
+option:first-child {
+  color: gray;
+}
+
+option:checked {
+  background-color: lightgray;
 }
