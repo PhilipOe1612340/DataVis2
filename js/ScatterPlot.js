@@ -1,10 +1,10 @@
 // @ts-check
 
 const margin = {
-    left: 50,
+    left: 80,
     right: 50,
     top: 10,
-    bottom: 10,
+    bottom: 30,
 };
 const height = window.innerHeight * 0.8;
 const width = window.innerWidth * 0.8;
@@ -48,13 +48,32 @@ class ScatterPlot extends HTMLElement {
             .scaleLinear()
             .domain([d3.min(xData), d3.max(xData)])
             .range([0, width - margin.left - margin.right]);
+        this.d3Selection
+            .append("g")
+            .attr("transform", "translate(30," + height + ")")
+            .call(d3.axisBottom(x).ticks(5));
+
+        // Set label for the X axis
+        this.d3Selection.append("text")
+            .attr("transform", "translate(" + (width / 2) + " ," + (height + margin.top + 20) + ")")
+            .style("text-anchor", "middle")
+            .text("Dim 1");
 
         // Add Y axis
         const y = d3
             .scaleLinear()
             .domain([d3.min(yData), d3.max(yData)])
-            .range([height - margin.top - margin.bottom, 0]);
-        this.d3Selection.append("g").attr("transform", "translate(30, 0)").call(d3.axisLeft(y));
+            .range([height, 0]);
+        this.d3Selection.append("g").attr("transform", "translate(30, 0)").call(d3.axisLeft(y).ticks(5));
+
+        // Set label for the Y axis
+        this.d3Selection.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 0 - margin.left)
+            .attr("x", 0 - (height / 2))
+            .attr("dy", "1em")
+            .style("text-anchor", "middle")
+            .text("Dim 2");
 
         // Add tooltip
         const tooltip = d3.select("body")
