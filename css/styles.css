@@ -1,3 +1,7 @@
+p {
+  margin: 0;
+}
+
 select {
   margin: 40px auto;
   display: block;
@@ -13,4 +17,16 @@ option:first-child {
 
 option:checked {
   background-color: lightgray;
+}
+
+.plot-tooltip {
+  border-radius: 5px;
+  background-color: white;
+  font-size: small;
+  text-align: justify;
+  padding: 10px;
+  width: 200px;
+  height: 100px;
+  position: absolute;
+  display: none;
 }
