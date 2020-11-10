@@ -2,22 +2,66 @@
 /**@type {import("d3")} (only for the type check) */
 var d3 = globalThis.d3;
 
-const btn = document.getElementById("button");
-btn.addEventListener("click", loadData);
+const datasets = ["artificial_labeled.csv", "education_labeled.csv", "iris_labeled.csv", "mtcars_labeled.csv", "wine_labeled.csv"];
+const loadedDatasets = {};
 
-async function loadData() {
-  const datasetNames = ["artificial_labeled.csv", "education_labeled.csv", "iris_labeled.csv", "mtcars_labeled.csv", "wine_labeled.csv"];
+/**
+ * @type {HTMLSelectElement}
+ */
+const sel = document.getElementById("select");
+const nothing = document.createElement("option");
+nothing.innerText = "select dataset";
+sel.appendChild(nothing);
 
-  // load datasets using the d3 csv method
-  const loadingDatasets = datasetNames.map((file) => d3.csv("/datasets/" + file));
+customElements.whenDefined("scatter-plot").then(() => {
+  document.body.appendChild(new ScatterPlot());
 
-  // wait for all datasets to load
-  const datasets = await Promise.all(loadingDatasets);
-
-  datasets.forEach((d, i) => {
-    console.log(`%cdataset ${i}:`, "background: #222; color: #bada55");
-    console.table(d[0]);
+  datasets.forEach((d) => {
+    const node = document.createElement("option");
+    node.value = d;
+    node.innerText = d;
+    sel.appendChild(node);
   });
+});
 
-  alert('Datasets loaded. Check console to see the results.')
+sel.addEventListener("change", async (e) => {
+  const value = e.target.value;
+  if (!value) return;
+  const data = await loadData(value);
+  showData(data);
+});
+
+/**
+ *
+ * @param {string} value
+ */
+async function loadData(value) {
+  const data = loadedDatasets[value] || (await d3.csv("/datasets/" + value));
+
+  // cache datasets
+  if (!loadedDatasets[value]) {
+    loadedDatasets[value] = data;
+  }
+  return data;
+}
+
+/**
+ * @param {any[]} data
+ */
+function showData(data) {
+  /**
+   * @type {ScatterPlot}
+   */
+  const plot = document.querySelector("scatter-plot");
+  const axes = Object.keys(data[0]);
+  const hasClass = axes.includes("class");
+
+  /**
+   * @param {string | any[]} d
+   */
+  const firstDimensions = data.map((d) => {
+    return { x: d[axes[0]], y: d[axes[1]], class: d[hasClass ? "class" : d[d.length - 1]] };
+  });
+  plot.setDataset(firstDimensions);
+  plot.update();
 }
