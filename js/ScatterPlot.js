@@ -16,6 +16,7 @@ class ScatterPlot extends HTMLElement {
          * @type {{x: number, y: number, class: string}[]}
          */
         this.data = [];
+        this.dimensionNames = null;
         this.d3Selection = d3.select(this).append("svg");
         this.onresize = this.resize;
         this.style.margin = `${margin.top}px ${margin.right}px ${margin.bottom}px ${margin.left}px`;
@@ -32,8 +33,6 @@ class ScatterPlot extends HTMLElement {
 
     update() {
         this.resize();
-        const xData = this.data.map((d) => d.x);
-        const yData = this.data.map((d) => d.y);
 
         const uniqueClasses = this.data.map(d => d.class)
             .filter((value, index, self) => self.indexOf(value) === index);
@@ -46,7 +45,7 @@ class ScatterPlot extends HTMLElement {
         // Add X axis
         const x = d3
             .scaleLinear()
-            .domain([d3.min(xData), d3.max(xData)])
+            .domain(d3.extent(this.data, (d) => +d.x))
             .range([0, width - margin.left - margin.right]);
         this.d3Selection
             .append("g")
@@ -57,32 +56,32 @@ class ScatterPlot extends HTMLElement {
         this.d3Selection.append("text")
             .attr("transform", "translate(" + (width / 2) + " ," + (height + margin.top + 20) + ")")
             .style("text-anchor", "middle")
-            .text("Dim 1");
+            .text(this.dimensionNames[0]);
 
         // Add Y axis
         const y = d3
             .scaleLinear()
-            .domain([d3.min(yData), d3.max(yData)])
-            .range([height, 0]);
+            .domain(d3.extent(this.data, (d) => +d.y))
+            .range([height, margin.top]);
         this.d3Selection.append("g").attr("transform", "translate(30, 0)").call(d3.axisLeft(y).ticks(5));
 
         // Set label for the Y axis
         this.d3Selection.append("text")
             .attr("transform", "rotate(-90)")
-            .attr("y", 0 - margin.left)
-            .attr("x", 0 - (height / 2))
+            .attr("x", -(height/2))
+            .attr("y", -3)
             .attr("dy", "1em")
             .style("text-anchor", "middle")
-            .text("Dim 2");
+            .text(this.dimensionNames[1]);
 
         // Add tooltip
         const tooltip = d3.select("body")
             .append("div")
             .attr("class", "plot-tooltip")
-            .on("mouseover", function (d, i) {
+            .on("mouseover",  (d, i) => {
                 tooltip.transition().duration(0);
             })
-            .on("mouseout", function (d, i) {
+            .on("mouseout",  (d, i) => {
                 tooltip.style("display", "none");
             });
 
@@ -93,8 +92,8 @@ class ScatterPlot extends HTMLElement {
             .data(this.data)
             .enter()
             .append("circle")
-            .attr("cx", (d) => x(d.x) + 30)
-            .attr("cy", (d) => y(d.y))
+            .attr("cx", (d) => x(+d.x) + 30)
+            .attr("cy", (d) => y(+d.y))
             .text((d) => d.class)
             .attr("title", (d) => d.class)
             .attr("r", 4)
@@ -139,6 +138,10 @@ class ScatterPlot extends HTMLElement {
     setDataset(data) {
         this.data = data;
         this.d3Selection.selectAll("*").remove();
+    }
+
+    setDimensions(dimensionNames) {
+        this.dimensionNames = dimensionNames;
     }
 }
 

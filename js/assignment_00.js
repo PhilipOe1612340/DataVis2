@@ -55,6 +55,7 @@ function showData(data) {
   const plot = document.querySelector("scatter-plot");
   const axes = Object.keys(data[0]);
   const hasClass = axes.includes("class");
+  const dimensionNames = Object.values(data.columns).slice(0,2);
 
   /**
    * @param {string | any[]} d
@@ -63,5 +64,6 @@ function showData(data) {
     return { x: d[axes[0]], y: d[axes[1]], class: d[hasClass ? "class" : d[d.length - 1]] };
   });
   plot.setDataset(firstDimensions);
+  plot.setDimensions(dimensionNames);
   plot.update();
 }
