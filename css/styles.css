@@ -1,23 +1,30 @@
-body {
-  background: #7ec2c2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+p {
+  margin: 0;
 }
 
-div:hover {
-  border-radius: 50px;
-  background: #7ec2c2;
-  box-shadow: inset 32px 32px 64px #6ba5a5, inset -32px -32px 64px #91dfdf;
+select {
+  margin: 40px auto;
+  display: block;
 }
 
-div {
-  border-radius: 50px;
-  background: linear-gradient(145deg, #71afaf, #87d0d0);
-  box-shadow: 32px 32px 64px #6ba5a5, -32px -32px 64px #91dfdf;
-  width: 190px;
-  height: 190px;
-  padding: 82px 0px 0px 57px;
-  text-transform: uppercase;
-  color: white;
+option:first-child::selection {
+  background: lightblue;
+}
+
+option:first-child {
+  color: gray;
+}
+
+option:checked {
+  background-color: lightgray;
+}
+
+.plot-tooltip {
+  border-radius: 5px;
+  background-color: white;
+  font-size: small;
+  padding: 10px;
+  position: absolute;
+  box-shadow: rgba(0, 0, 0, 0.12) 3px 4px 2px;
+  display: none;
 }
