@@ -9,14 +9,15 @@ class MST {
     constructor(data, classes) {
         this.data = data;
         this.classes = classes;
-        this.graphs = this.filterByClass(
-            this.data.map((d) => ({ x: parseFloat(d.x), y: parseFloat(d.y), class: d.class })),
-            classes
-        ).map(this.makeGraph);
+        // this.graphs = this.filterByClass(
+        //     this.data.map((d) => ({ x: parseFloat(d.x), y: parseFloat(d.y), class: d.class })),
+        //     classes
+        // ).map((d) => this.makeGraph(d));
+
+        this.graph = this.makeGraph(this.data.map((d) => ({ x: parseFloat(d.x), y: parseFloat(d.y), class: d.class })));
     }
 
     static calculate(graph) {
-        debugger;
         const vertices = graph.nodes,
             edges = graph.links.slice(0),
             selectedEdges = [],
@@ -29,12 +30,12 @@ class MST {
 
         // Sort edges in descending order of weight. We will pop edges beginning
         // from the end of the array.
-        // edges.sort((a, b) => {
-        //   return -(a.weight - b.weight);
-        // });
+        edges.sort((a, b) => {
+            return -(a.weight - b.weight);
+        });
 
         while (edges.length && forest.size() > 1) {
-            let edge = edges.pop();
+            const edge = edges.pop();
 
             if (forest.find(edge.source) !== forest.find(edge.target)) {
                 forest.union(edge.source, edge.target);
@@ -58,54 +59,62 @@ class MST {
 
     /**
      * connect all the nodes to each other
-     * @returns {{nodes: GraphNode[], links: {weight: number, source: number, target: number}}[]}
+     * @param {{x: number, y: number}[]} nodeList
+     * @returns {{nodes: GraphNode[], links: {weight: number, source: number, target: number}[]}[]}
      */
     makeGraph(nodeList) {
-        const nodes = nodeList.map((n) => ({ ...n, id: ~~(Math.random() * 1000) }));
+        nodeList.forEach((n, id) => (n.id = id));
         const graphs = {
-            nodes,
-            links: nodes.flatMap((source) =>
-                nodes.filter((target) => target != source).map((target) => ({ weight: 1, source: source.id, target: target.id }))
+            nodes: nodeList,
+            links: nodeList.flatMap((source) =>
+                nodeList
+                    .filter((target) => target != source)
+                    .map((target) => ({ weight: this.distance(source, target), source: source.id, target: target.id }))
             ),
         };
-        console.log(graphs);
         // @ts-ignore
         return graphs;
+    }
+
+    distance(source, target) {
+        const a = source.x - target.x;
+        const b = source.y - target.y;
+        return Math.sqrt(a ** 2 + b ** 2);
     }
 }
 
 class GraphNode {
     constructor(id) {
-        this.id_ = id;
-        this.parent_ = this;
-        this.rank_ = 0;
+        this.id = id;
+        this.parent = this;
+        this.rank = 0;
     }
 }
 
 class DisjointSet {
     constructor() {
-        this.index_ = {};
+        this.index = {};
     }
 
     makeSet(id) {
-        if (!this.index_[id]) {
+        if (!this.index[id]) {
             let created = new GraphNode(id);
-            this.index_[id] = created;
+            this.index[id] = created;
         }
     }
 
     // Returns the id of the representative element of this set that (id)
     // belongs to.
     find(id) {
-        if (this.index_[id] === undefined) {
+        if (this.index[id] === undefined) {
             return undefined;
         }
 
-        let current = this.index_[id].parent_;
-        while (current !== current.parent_) {
-            current = current.parent_;
+        let current = this.index[id].parent;
+        while (current !== current.parent) {
+            current = current.parent;
         }
-        return current.id_;
+        return current.id;
     }
 
     /**
@@ -114,8 +123,8 @@ class DisjointSet {
      * @param {GraphNode[]} y
      */
     union(x, y) {
-        let xRoot = this.index_[this.find(x)];
-        let yRoot = this.index_[this.find(y)];
+        let xRoot = this.index[this.find(x)];
+        let yRoot = this.index[this.find(y)];
 
         if (xRoot === undefined || yRoot === undefined || xRoot === yRoot) {
             // x and y already belong to the same set.
@@ -124,14 +133,14 @@ class DisjointSet {
 
         if (xRoot.rank < yRoot.rank) {
             // Move x into the set y is a member of.
-            xRoot.parent_ = yRoot;
-        } else if (yRoot.rank_ < xRoot.rank_) {
+            xRoot.parent = yRoot;
+        } else if (yRoot.rank < xRoot.rank) {
             // Move y into the set x is a member of.
-            yRoot.parent_ = xRoot;
+            yRoot.parent = xRoot;
         } else {
             // Arbitrarily choose to move y into the set x is a member of.
-            yRoot.parent_ = xRoot;
-            xRoot.rank_++;
+            yRoot.parent = xRoot;
+            xRoot.rank++;
         }
     }
 
@@ -139,9 +148,7 @@ class DisjointSet {
     size() {
         let uniqueIndices = {};
 
-        Object.keys(this.index_).forEach((id) => {
-            let representative = this.find(id);
-
+        Object.keys(this.index).forEach((id) => {
             uniqueIndices[id] = true;
         });
 

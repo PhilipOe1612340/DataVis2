@@ -16,7 +16,7 @@ class ScatterPlot extends HTMLElement {
     constructor() {
         super();
         /**
-         * @type {{x: number, y: number, class: string}[]}
+         * @type {{x: string, y: string, class: string}[]}
          */
         this.data = [];
         this.dimensionNames = null;
@@ -68,21 +68,19 @@ class ScatterPlot extends HTMLElement {
             .range([height, margin.top]);
         this.d3Selection.append("g").attr("transform", "translate(30, 0)").call(d3.axisLeft(y).ticks(5));
 
-        const graphs = new MST(this.data, uniqueClasses).graphs.map(MST.calculate);
-
-        graphs.forEach((g) => {
-            g.links.forEach((link) => {
-                const source = g.nodes.find((g) => g.id === link.source);
-                const target = g.nodes.find((g) => g.id === link.target);
-                this.d3Selection
-                    .append("line")
-                    .attr("x1", x(source.x) + 30)
-                    .attr("y1", y(source.y))
-                    .attr("x2", x(target.x) + 30)
-                    .attr("y2", y(target.y))
-                    .attr("stroke-width", 2)
-                    .attr("stroke", "black");
-            });
+        const tree = MST.calculate(new MST(this.data, uniqueClasses).graph);
+        tree.links.forEach((link) => {
+            const source = tree.nodes.find((g) => g.id === link.source);
+            const target = tree.nodes.find((g) => g.id === link.target);
+            this.d3Selection
+                .append("line")
+                .attr("x1", x(source.x) + 30)
+                .attr("y1", y(source.y))
+                .attr("x2", x(target.x) + 30)
+                .attr("y2", y(target.y))
+                .attr("stroke-width", 1.5)
+                .attr("opacity", 0.65)
+                .attr("stroke", "black");
         });
 
         // Set label for the Y axis
