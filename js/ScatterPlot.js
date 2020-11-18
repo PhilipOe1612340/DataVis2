@@ -13,11 +13,12 @@ const height = window.innerHeight * 0.8;
 const width = window.innerWidth * 0.8;
 
 class ScatterPlot extends HTMLElement {
-    constructor() {
+    constructor(showMST) {
         super();
         /**
          * @type {{x: string, y: string, class: string}[]}
          */
+        this.showMST = showMST;
         this.data = [];
         this.dimensionNames = null;
         this.d3Selection = d3.select(this).append("svg");
@@ -34,7 +35,7 @@ class ScatterPlot extends HTMLElement {
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     }
 
-    update() {
+    update(showMst) {
         this.resize();
 
         const uniqueClasses = this.data.map((d) => d.class).filter((value, index, self) => self.indexOf(value) === index);
@@ -68,20 +69,24 @@ class ScatterPlot extends HTMLElement {
             .range([height, margin.top]);
         this.d3Selection.append("g").attr("transform", "translate(30, 0)").call(d3.axisLeft(y).ticks(5));
 
-        const tree = MST.calculate(new MST(this.data, uniqueClasses).graph);
-        tree.links.forEach((link) => {
-            const source = tree.nodes.find((g) => g.id === link.source);
-            const target = tree.nodes.find((g) => g.id === link.target);
-            this.d3Selection
-                .append("line")
-                .attr("x1", x(source.x) + 30)
-                .attr("y1", y(source.y))
-                .attr("x2", x(target.x) + 30)
-                .attr("y2", y(target.y))
-                .attr("stroke-width", 1.5)
-                .attr("opacity", 0.65)
-                .attr("stroke", "black");
-        });
+        if (showMst) {
+            const tree = MST.calculate(new MST(this.data, uniqueClasses).graph);
+            tree.links.forEach((link) => {
+                const source = tree.nodes.find((g) => g.id === link.source);
+                const target = tree.nodes.find((g) => g.id === link.target);
+                this.d3Selection
+                    .append("line")
+                    .attr("x1", x(source.x) + 30)
+                    .attr("y1", y(source.y))
+                    .attr("x2", x(target.x) + 30)
+                    .attr("y2", y(target.y))
+                    .attr("stroke-width", 1.5)
+                    .attr("opacity", 0.65)
+                    .attr("stroke", "black");
+            });
+        } else {
+            this.d3Selection.selectAll("line").remove();
+        }
 
         // Set label for the Y axis
         this.d3Selection

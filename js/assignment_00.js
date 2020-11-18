@@ -15,6 +15,8 @@ const nothing = document.createElement("option");
 nothing.innerText = "select dataset";
 sel.appendChild(nothing);
 
+const mstCheckbox = document.getElementById("checkbox-mst");
+
 customElements.whenDefined("scatter-plot").then(() => {
     document.body.appendChild(new ScatterPlot());
 
@@ -32,6 +34,13 @@ sel.addEventListener("change", async (e) => {
     const data = await loadData(value);
     showData(data);
 });
+
+mstCheckbox.addEventListener("change", async (e) => {
+    const plot = document.querySelector("scatter-plot");
+    plot.update(mstCheckbox.checked);
+})
+
+
 
 /**
  *
@@ -63,9 +72,9 @@ function showData(data) {
      * @param {string | any[]} d
      */
     const firstDimensions = data.map((d) => {
-        return { x: d[axes[0]], y: d[axes[1]], class: d[hasClass ? "class" : d[d.length - 1]] };
+        return {x: d[axes[0]], y: d[axes[1]], class: d[hasClass ? "class" : d[d.length - 1]]};
     });
     plot.setDataset(firstDimensions);
     plot.setDimensions(dimensionNames);
-    plot.update();
+    plot.update(mstCheckbox.checked);
 }
