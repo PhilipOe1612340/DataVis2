@@ -13,12 +13,11 @@ const height = window.innerHeight * 0.8;
 const width = window.innerWidth * 0.8;
 
 class ScatterPlot extends HTMLElement {
-    constructor(showMST) {
+    constructor() {
         super();
         /**
          * @type {{x: string, y: string, class: string}[]}
          */
-        this.showMST = showMST;
         this.data = [];
         this.dimensionNames = null;
         this.d3Selection = d3.select(this).append("svg");
@@ -37,13 +36,6 @@ class ScatterPlot extends HTMLElement {
 
     update(showMst) {
         this.resize();
-
-        const uniqueClasses = this.data.map((d) => d.class).filter((value, index, self) => self.indexOf(value) === index);
-        // Assign random color to each class label
-        let colors = {};
-        for (let c of uniqueClasses) {
-            colors[c] = "#" + (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 6);
-        }
 
         // Add X axis
         const x = d3
@@ -70,7 +62,7 @@ class ScatterPlot extends HTMLElement {
         this.d3Selection.append("g").attr("transform", "translate(30, 0)").call(d3.axisLeft(y).ticks(5));
 
         if (showMst) {
-            const tree = MST.calculate(new MST(this.data, uniqueClasses).graph);
+            const tree = MST.calculate(new MST(this.data, this.uniqueClasses).graph);
             tree.links.forEach((link) => {
                 const source = tree.nodes.find((g) => g.id === link.source);
                 const target = tree.nodes.find((g) => g.id === link.target);
@@ -122,7 +114,7 @@ class ScatterPlot extends HTMLElement {
             .text((d) => d.class)
             .attr("title", (d) => d.class)
             .attr("r", 4)
-            .style("fill", (d, i) => colors[d.class])
+            .style("fill", (d, i) => this.colors[d.class])
             .on("mouseover", (event, d) => {
                 const id = this.data.indexOf(d);
                 tooltip.html(`<table>
@@ -146,7 +138,7 @@ class ScatterPlot extends HTMLElement {
                 tooltip.transition().duration(0);
                 tooltip.style("top", event.pageY - 27 + "px");
                 tooltip.style("left", event.pageX + 15 + "px");
-                tooltip.style("border", "2px solid " + colors[d.class]);
+                tooltip.style("border", "2px solid " + this.colors[d.class]);
                 tooltip.style("display", "block");
             })
             .on("mouseout", (d, i) => {
@@ -159,6 +151,12 @@ class ScatterPlot extends HTMLElement {
      */
     setDataset(data) {
         this.data = data;
+        this.uniqueClasses = this.data.map((d) => d.class).filter((value, index, self) => self.indexOf(value) === index);
+        // Assign random color to each class label
+        this.colors = {};
+        for (let c of this.uniqueClasses) {
+            this.colors[c] = "#" + (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 6);
+        }
         this.d3Selection.selectAll("*").remove();
     }
 
