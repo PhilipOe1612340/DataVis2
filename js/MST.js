@@ -1,14 +1,14 @@
-
+// @ts-check
 class MST {
     /**
      * @param data where our graph is stored
      */
     constructor(data) {
         this.data = data;
-        this.graph = this.makeGraph(this.data.map((d) => ({ x: parseFloat(d.x), y: parseFloat(d.y), class: d.class })));
     }
 
-    static calculate(graph) {
+    calculate() {
+        const graph = this.makeGraph(this.data.map((d) => ({ x: parseFloat(d.x), y: parseFloat(d.y), class: d.class })));
         const vertices = graph.nodes,
             edges = graph.links.slice(0),
             selectedEdges = [],
@@ -27,7 +27,7 @@ class MST {
         while (edges.length && edgeGroups.size() > 1) {
             const edge = edges.pop(); // Start with "cheapest" edge
 
-            if (edgeGroups.find(edge.source) !== edgeGroups.find(edge.target)) {
+            if (edgeGroups.findRoot(edge.source) !== edgeGroups.findRoot(edge.target)) {
                 edgeGroups.union(edge.source, edge.target);
                 selectedEdges.push(edge);
             }
@@ -42,7 +42,7 @@ class MST {
     /**
      * Connect all original nodes to get a fully connected graph
      * @param {{x: number, y: number}[]} nodeList
-     * @returns {{nodes: GraphNode[], links: {weight: number, source: number, target: number}[]}[]}
+     * @returns {{nodes: GraphNode[], links: {weight: number, source: number, target: number}[]}}
      */
     makeGraph(nodeList) {
         nodeList.forEach((n, id) => (n.id = id));
@@ -52,7 +52,7 @@ class MST {
             links: nodeList.flatMap((source) =>
                 nodeList
                     .filter((target) => target !== source)
-                    .map((target) => ({weight: this.distance(source, target), source: source.id, target: target.id}))
+                    .map((target) => ({ weight: this.distance(source, target), source: source.id, target: target.id }))
             ),
         };
     }
@@ -80,27 +80,24 @@ class GraphNode {
 
 class DisjointSet {
     constructor() {
-        this.index = {};
+        this.index = new Map;
     }
 
     makeSet(id) {
-        if (!this.index[id]) {
-            let created = new GraphNode(id);
-            this.index[id] = created;
-        }
+        this.index.set(id, new GraphNode(id));
     }
 
     /**
-     * Return the id of the set that this node belongs to
-     * @param nodeId
-     * @returns id (group id)
+     * Return root node of branch
+     * @param {number} nodeId 
+     * @returns id
      */
-    find(nodeId) {
-        if (this.index[nodeId] === undefined) {
+    findRoot(nodeId) {
+        if (!this.index.has(nodeId)) {
             return undefined;
         }
 
-        let current = this.index[nodeId].parent;
+        let current = this.index.get(nodeId).parent;
         while (current !== current.parent) {
             current = current.parent;
         }
@@ -109,12 +106,12 @@ class DisjointSet {
 
     /**
      * When connecting x and y, assign them to the corresponding set
-     * @param {GraphNode[]} x
-     * @param {GraphNode[]} y
+     * @param {number} x
+     * @param {number} y
      */
     union(x, y) {
-        let xRoot = this.index[this.find(x)];
-        let yRoot = this.index[this.find(y)];
+        let xRoot = this.index.get(this.findRoot(x));
+        let yRoot = this.index.get(this.findRoot(y));
 
         if (xRoot === undefined || yRoot === undefined || xRoot === yRoot) {
             // x and y already belong to the same set.
@@ -122,13 +119,13 @@ class DisjointSet {
         }
 
         if (xRoot.rank < yRoot.rank) {
-            // Move x into the set of y
+            // move x into the set of y
             xRoot.parent = yRoot;
         } else if (yRoot.rank < xRoot.rank) {
-            // Move y into the set of x
+            // move y into the set of x
             yRoot.parent = xRoot;
         } else {
-            // Arbitrarily choose to move y into the set x is a member of
+            // move y into the set x is a member of
             yRoot.parent = xRoot;
             xRoot.rank++;
         }
@@ -139,12 +136,6 @@ class DisjointSet {
      * @returns {number}
      */
     size() {
-        let uniqueIndices = {};
-
-        Object.keys(this.index).forEach((id) => {
-            uniqueIndices[id] = true;
-        });
-
-        return Object.keys(uniqueIndices).length;
+        return Array.from(this.index.keys()).length;
     }
 }

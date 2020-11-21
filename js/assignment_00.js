@@ -17,6 +17,12 @@ sel.appendChild(nothing);
 
 const mstCheckbox = document.getElementById("checkbox-mst");
 
+function setDatasetFromHash(e) {
+    sel.value = window.location.hash.substr(1);
+    sel.dispatchEvent(new Event('change'));
+}
+window.onpopstate = window.history.onpushstate = setDatasetFromHash
+
 customElements.whenDefined("scatter-plot").then(() => {
     document.body.appendChild(new ScatterPlot());
 
@@ -26,13 +32,16 @@ customElements.whenDefined("scatter-plot").then(() => {
         node.innerText = d;
         sel.appendChild(node);
     });
+    setDatasetFromHash();
 });
+
 
 sel.addEventListener("change", async (e) => {
     const value = e.target.value;
     if (!value) return;
     const data = await loadData(value);
     showData(data);
+    window.history.replaceState(value, 'Dataset: ' + value, '#' + value);
 });
 
 mstCheckbox.addEventListener("change", async (e) => {
@@ -72,7 +81,7 @@ function showData(data) {
      * @param {string | any[]} d
      */
     const firstDimensions = data.map((d) => {
-        return {x: d[axes[0]], y: d[axes[1]], class: d[hasClass ? "class" : d[d.length - 1]]};
+        return { x: d[axes[0]], y: d[axes[1]], class: d[hasClass ? "class" : d[d.length - 1]] };
     });
     plot.setDataset(firstDimensions);
     plot.setDimensions(dimensionNames);
