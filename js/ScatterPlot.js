@@ -1,4 +1,7 @@
 // @ts-check
+/**@type {import("d3")} (only for the type check) */
+// @ts-ignore
+var d3 = globalThis.d3;
 
 const margin = {
     left: 80,
@@ -13,7 +16,7 @@ class ScatterPlot extends HTMLElement {
     constructor() {
         super();
         /**
-         * @type {{x: number, y: number, class: string}[]}
+         * @type {{x: string, y: string, class: string}[]}
          */
         this.data = [];
         this.dimensionNames = null;
@@ -31,16 +34,8 @@ class ScatterPlot extends HTMLElement {
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     }
 
-    update() {
+    update(showMst) {
         this.resize();
-
-        const uniqueClasses = this.data.map(d => d.class)
-            .filter((value, index, self) => self.indexOf(value) === index);
-        // Assign random color to each class label
-        let colors = {};
-        for (let c of uniqueClasses) {
-            colors[c] = "#" + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6);
-        }
 
         // Add X axis
         const x = d3
@@ -53,8 +48,9 @@ class ScatterPlot extends HTMLElement {
             .call(d3.axisBottom(x).ticks(5));
 
         // Set label for the X axis
-        this.d3Selection.append("text")
-            .attr("transform", "translate(" + (width / 2) + " ," + (height + margin.top + 20) + ")")
+        this.d3Selection
+            .append("text")
+            .attr("transform", "translate(" + width / 2 + " ," + (height + margin.top + 20) + ")")
             .style("text-anchor", "middle")
             .text(this.dimensionNames[0]);
 
@@ -65,23 +61,44 @@ class ScatterPlot extends HTMLElement {
             .range([height, margin.top]);
         this.d3Selection.append("g").attr("transform", "translate(30, 0)").call(d3.axisLeft(y).ticks(5));
 
+        if (showMst) {
+            const tree = MST.calculate(new MST(this.data).graph);
+            tree.links.forEach((link) => {
+                const source = tree.nodes.find((g) => g.id === link.source);
+                const target = tree.nodes.find((g) => g.id === link.target);
+                this.d3Selection
+                    .append("line")
+                    .attr("x1", x(source.x) + 30)
+                    .attr("y1", y(source.y))
+                    .attr("x2", x(target.x) + 30)
+                    .attr("y2", y(target.y))
+                    .attr("stroke-width", 1.5)
+                    .attr("opacity", 0.65)
+                    .attr("stroke", "black");
+            });
+        } else {
+            this.d3Selection.selectAll("line").remove();
+        }
+
         // Set label for the Y axis
-        this.d3Selection.append("text")
+        this.d3Selection
+            .append("text")
             .attr("transform", "rotate(-90)")
-            .attr("x", -(height/2))
+            .attr("x", -(height / 2))
             .attr("y", -3)
             .attr("dy", "1em")
             .style("text-anchor", "middle")
             .text(this.dimensionNames[1]);
 
         // Add tooltip
-        const tooltip = d3.select("body")
+        const tooltip = d3
+            .select("body")
             .append("div")
             .attr("class", "plot-tooltip")
-            .on("mouseover",  (d, i) => {
+            .on("mouseover", (d, i) => {
                 tooltip.transition().duration(0);
             })
-            .on("mouseout",  (d, i) => {
+            .on("mouseout", (d, i) => {
                 tooltip.style("display", "none");
             });
 
@@ -97,7 +114,7 @@ class ScatterPlot extends HTMLElement {
             .text((d) => d.class)
             .attr("title", (d) => d.class)
             .attr("r", 4)
-            .style("fill", (d, i) => colors[d.class])
+            .style("fill", (d, i) => this.colors[d.class])
             .on("mouseover", (event, d) => {
                 const id = this.data.indexOf(d);
                 tooltip.html(`<table>
@@ -117,19 +134,16 @@ class ScatterPlot extends HTMLElement {
                         <td>Datapoint:</td>
                         <td style="text-align: right">(${parseFloat(d.x).toFixed(1)}, ${parseFloat(d.y).toFixed(1)})</td>
                         </tr>
-                        </table>`)
+                        </table>`);
                 tooltip.transition().duration(0);
-                tooltip.style("top", (event.pageY - 27) + "px");
-                tooltip.style("left", (event.pageX + 15) + "px");
-                tooltip.style("border", "2px solid " + colors[d.class])
+                tooltip.style("top", event.pageY - 27 + "px");
+                tooltip.style("left", event.pageX + 15 + "px");
+                tooltip.style("border", "2px solid " + this.colors[d.class]);
                 tooltip.style("display", "block");
             })
             .on("mouseout", (d, i) => {
-                tooltip.transition()
-                    .delay(500)
-                    .style("display", "none");
+                tooltip.transition().delay(500).style("display", "none");
             });
-
     }
 
     /**
@@ -137,6 +151,12 @@ class ScatterPlot extends HTMLElement {
      */
     setDataset(data) {
         this.data = data;
+        this.uniqueClasses = this.data.map((d) => d.class).filter((value, index, self) => self.indexOf(value) === index);
+        // Assign random color to each class label
+        this.colors = {};
+        for (let c of this.uniqueClasses) {
+            this.colors[c] = "#" + (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 6);
+        }
         this.d3Selection.selectAll("*").remove();
     }
 
