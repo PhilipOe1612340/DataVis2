@@ -62,7 +62,7 @@ class ScatterPlot extends HTMLElement {
         this.d3Selection.append("g").attr("transform", "translate(30, 0)").call(d3.axisLeft(y).ticks(5));
 
         if (showMst) {
-            const tree = MST.calculate(new MST(this.data, this.uniqueClasses).graph);
+            const tree = MST.calculate(new MST(this.data).graph);
             tree.links.forEach((link) => {
                 const source = tree.nodes.find((g) => g.id === link.source);
                 const target = tree.nodes.find((g) => g.id === link.target);

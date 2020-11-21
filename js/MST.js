@@ -1,19 +1,10 @@
-// @ts-check
 
 class MST {
     /**
-     *
-     * @param {{x: string, y: string, class: string}[]} data
-     * @param {string[]} classes
+     * @param data where our graph is stored
      */
-    constructor(data, classes) {
+    constructor(data) {
         this.data = data;
-        this.classes = classes;
-        // this.graphs = this.filterByClass(
-        //     this.data.map((d) => ({ x: parseFloat(d.x), y: parseFloat(d.y), class: d.class })),
-        //     classes
-        // ).map((d) => this.makeGraph(d));
-
         this.graph = this.makeGraph(this.data.map((d) => ({ x: parseFloat(d.x), y: parseFloat(d.y), class: d.class })));
     }
 
@@ -21,24 +12,23 @@ class MST {
         const vertices = graph.nodes,
             edges = graph.links.slice(0),
             selectedEdges = [],
-            forest = new DisjointSet();
+            edgeGroups = new DisjointSet();
 
-        // Each vertex begins "disconnected" and isolated from all the others.
+        // Each vertex begins disconnected from all the others
         vertices.forEach((vertex) => {
-            forest.makeSet(vertex.id);
+            edgeGroups.makeSet(vertex.id);
         });
 
-        // Sort edges in descending order of weight. We will pop edges beginning
-        // from the end of the array.
+        // Sort edges in descending order of weight
         edges.sort((a, b) => {
             return -(a.weight - b.weight);
         });
 
-        while (edges.length && forest.size() > 1) {
-            const edge = edges.pop();
+        while (edges.length && edgeGroups.size() > 1) {
+            const edge = edges.pop(); // Start with "cheapest" edge
 
-            if (forest.find(edge.source) !== forest.find(edge.target)) {
-                forest.union(edge.source, edge.target);
+            if (edgeGroups.find(edge.source) !== edgeGroups.find(edge.target)) {
+                edgeGroups.union(edge.source, edge.target);
                 selectedEdges.push(edge);
             }
         }
@@ -50,32 +40,29 @@ class MST {
     }
 
     /**
-     * @param {{x: number, y: number, class: string}[]} data
-     * @param {string[]} classes
-     */
-    filterByClass(data, classes) {
-        return classes.map((c) => data.filter((d) => d.class === c));
-    }
-
-    /**
-     * connect all the nodes to each other
+     * Connect all original nodes to get a fully connected graph
      * @param {{x: number, y: number}[]} nodeList
      * @returns {{nodes: GraphNode[], links: {weight: number, source: number, target: number}[]}[]}
      */
     makeGraph(nodeList) {
         nodeList.forEach((n, id) => (n.id = id));
-        const graphs = {
+        // @ts-ignore
+        return {
             nodes: nodeList,
             links: nodeList.flatMap((source) =>
                 nodeList
-                    .filter((target) => target != source)
-                    .map((target) => ({ weight: this.distance(source, target), source: source.id, target: target.id }))
+                    .filter((target) => target !== source)
+                    .map((target) => ({weight: this.distance(source, target), source: source.id, target: target.id}))
             ),
         };
-        // @ts-ignore
-        return graphs;
     }
 
+    /**
+     * Compute Euclidean distance between points
+     * @param source
+     * @param target
+     * @returns {number}
+     */
     distance(source, target) {
         const a = source.x - target.x;
         const b = source.y - target.y;
@@ -103,14 +90,17 @@ class DisjointSet {
         }
     }
 
-    // Returns the id of the representative element of this set that (id)
-    // belongs to.
-    find(id) {
-        if (this.index[id] === undefined) {
+    /**
+     * Return the id of the set that this node belongs to
+     * @param nodeId
+     * @returns id (group id)
+     */
+    find(nodeId) {
+        if (this.index[nodeId] === undefined) {
             return undefined;
         }
 
-        let current = this.index[id].parent;
+        let current = this.index[nodeId].parent;
         while (current !== current.parent) {
             current = current.parent;
         }
@@ -118,7 +108,7 @@ class DisjointSet {
     }
 
     /**
-     *
+     * When connecting x and y, assign them to the corresponding set
      * @param {GraphNode[]} x
      * @param {GraphNode[]} y
      */
@@ -132,19 +122,22 @@ class DisjointSet {
         }
 
         if (xRoot.rank < yRoot.rank) {
-            // Move x into the set y is a member of.
+            // Move x into the set of y
             xRoot.parent = yRoot;
         } else if (yRoot.rank < xRoot.rank) {
-            // Move y into the set x is a member of.
+            // Move y into the set of x
             yRoot.parent = xRoot;
         } else {
-            // Arbitrarily choose to move y into the set x is a member of.
+            // Arbitrarily choose to move y into the set x is a member of
             yRoot.parent = xRoot;
             xRoot.rank++;
         }
     }
 
-    // Returns the current number of disjoint sets.
+    /**
+     * Return the current number of disjoint sets
+     * @returns {number}
+     */
     size() {
         let uniqueIndices = {};
 
