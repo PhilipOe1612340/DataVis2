@@ -76,6 +76,8 @@ class ScatterPlot extends HTMLElement {
                     .attr("opacity", 0.65)
                     .attr("stroke", "black");
             });
+            const outlying = new Scagnostics(tree.links).calculateOutlying();
+            console.log("Outlying measure: " + outlying);
         } else {
             this.d3Selection.selectAll("line").remove();
         }

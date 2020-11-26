@@ -139,3 +139,13 @@ class DisjointSet {
         return Array.from(this.index.keys()).length;
     }
 }
+
+class Scagnostics {
+    constructor (data) {
+        this.data = data;
+    }
+
+    calculateOutlying() {
+        console.log(this.data);
+    }
+}
