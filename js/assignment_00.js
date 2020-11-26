@@ -17,11 +17,11 @@ sel.appendChild(nothing);
 
 const mstCheckbox = document.getElementById("checkbox-mst");
 
-function setDatasetFromHash(e) {
+function readDatasetFromHash() {
     sel.value = window.location.hash.substr(1);
     sel.dispatchEvent(new Event('change'));
 }
-window.onpopstate = window.history.onpushstate = setDatasetFromHash
+window.onpopstate = window.history.onpushstate = readDatasetFromHash
 
 customElements.whenDefined("scatter-plot").then(() => {
     document.body.appendChild(new ScatterPlot());
@@ -32,7 +32,7 @@ customElements.whenDefined("scatter-plot").then(() => {
         node.innerText = d;
         sel.appendChild(node);
     });
-    setDatasetFromHash();
+    readDatasetFromHash();
 });
 
 
@@ -52,7 +52,6 @@ mstCheckbox.addEventListener("change", async (e) => {
 
 
 /**
- *
  * @param {string} value
  */
 async function loadData(value) {
