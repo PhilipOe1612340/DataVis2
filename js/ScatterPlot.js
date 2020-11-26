@@ -196,7 +196,7 @@ class ScatterPlot extends HTMLElement {
     // Assign random color to each class label
     this.colors = {};
     for (let c of this.uniqueClasses) {
-      this.colors[c] = "#" + (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 6);
+      this.colors[c] = "#00" + (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 4);
     }
   }
 
