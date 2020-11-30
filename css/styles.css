@@ -1,36 +1,40 @@
 p {
-    margin: 0;
+  margin: 0;
 }
 
 select {
-    margin: 40px auto;
-    display: block;
+  margin: 40px auto;
+  display: block;
 }
 
 #show-mst {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 option:first-child::selection {
-    background: lightblue;
+  background: lightblue;
 }
 
 option:first-child {
-    color: gray;
+  color: gray;
 }
 
 option:checked {
-    background-color: lightgray;
+  background-color: lightgray;
 }
 
 .plot-tooltip {
-    border-radius: 5px;
-    background-color: white;
-    font-size: small;
-    padding: 10px;
-    position: absolute;
-    box-shadow: rgba(0, 0, 0, 0.12) 3px 4px 2px;
-    display: none;
+  border-radius: 5px;
+  background-color: white;
+  font-size: small;
+  padding: 10px;
+  position: absolute;
+  box-shadow: rgba(0, 0, 0, 0.12) 3px 4px 2px;
+  display: none;
+}
+
+td:nth-child(2n) {
+  text-align: right;
 }
