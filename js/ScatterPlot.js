@@ -4,16 +4,15 @@
 var d3 = globalThis.d3;
 
 const margin = {
-  left: 50,
-  right: 50,
+  left: 10,
+  right: 10,
   top: 10,
-  bottom: 50,
+  bottom: 10,
 };
-const height = window.innerHeight * 0.8;
-const width = window.innerWidth * 0.8;
+
 
 class ScatterPlot extends HTMLElement {
-  constructor() {
+  constructor(size) {
     super();
     /**
      * @type {DataNode[]}
@@ -22,14 +21,17 @@ class ScatterPlot extends HTMLElement {
     this.dimensionNames = null;
     this.rootEl = d3.select(this).append("svg");
     this.style.margin = `${margin.top}px ${margin.right}px ${margin.bottom}px ${margin.left}px`;
-    this.style.width = "80vw";
+    // this.style.width = "100%";
     this.d3Selection = undefined;
+
+    this.height = window.innerHeight / size - margin.top - margin.bottom;
+    this.width = window.innerWidth / size - margin.right - margin.left;
   }
 
   makeContainer() {
     this.d3Selection = this.rootEl
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+      .attr("width", this.width + margin.left + margin.right)
+      .attr("height", this.height + margin.top + margin.bottom)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
   }
@@ -60,20 +62,20 @@ class ScatterPlot extends HTMLElement {
     const x = d3
       .scaleLinear()
       .domain(d3.extent(this.data, (d) => +d.x))
-      .range([0, width - margin.left - margin.right]);
+      .range([0, this.width - margin.left - margin.right]);
 
     // Add Y axis
     const y = d3
       .scaleLinear()
       .domain(d3.extent(this.data, (d) => +d.y))
-      .range([height, margin.top]);
+      .range([this.height, margin.top]);
 
     this.data.forEach((d) => d.scale(x, y));
 
     // Plot x axis
     this.d3Selection
       .append("g")
-      .attr("transform", "translate(0," + height + ")")
+      .attr("transform", "translate(0," + this.height + ")")
       .call(d3.axisBottom(x).ticks(5));
 
     // Plot y axis
@@ -82,7 +84,7 @@ class ScatterPlot extends HTMLElement {
     // Set label for the X axis
     this.rootEl
       .append("text")
-      .attr("transform", "translate(" + width / 2 + " ," + (height + margin.top + 30) + ")")
+      .attr("transform", "translate(" + this.width / 2 + " ," + (this.height + margin.top + 30) + ")")
       .style("text-anchor", "middle")
       .text(this.dimensionNames[0]);
 
@@ -90,7 +92,7 @@ class ScatterPlot extends HTMLElement {
     this.rootEl
       .append("text")
       .attr("transform", "rotate(-90)")
-      .attr("x", height / -2)
+      .attr("x", this.height / -2)
       .attr("y", 0)
       .attr("dy", "1em")
       .style("text-anchor", "middle")
@@ -153,7 +155,6 @@ class ScatterPlot extends HTMLElement {
       .style("stroke-width", "2px")
       .style("fill", (d) => this.colors[d.className])
       .on("mouseover", (event, d) => {
-        const id = this.data.indexOf(d);
         tooltip.html(`<table>
                         <tr>
                         <td>Class:</td>
@@ -161,11 +162,11 @@ class ScatterPlot extends HTMLElement {
                         </tr>
                         <tr>
                         <td>ID:</td>
-                        <td>${id}</td>
+                        <td>${d.id}</td>
                         </tr>
                         <tr>
                         <td>Screen Pos:</td>
-                        <td>(${event.pageX}, ${event.pageY})</td>
+                        <td>(${d.xCoord.toFixed(1)}, ${d.yCoord.toFixed(1)})</td>
                         </tr>
                         <tr>
                         <td>Datapoint:</td>

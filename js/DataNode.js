@@ -31,10 +31,10 @@ class DataNode {
   }
 
   /**
-   * @param {any[][]} data
+   * @param {any[] & {columns: string[]}} data
    */
   static convertDataset(data) {
-    const axes = Object.keys(data[0]);
+    const axes = data.columns;
     const hasClass = axes.includes("class");
     return data.map((d, i) => new DataNode(i, d[axes[0]], d[axes[1]], d[hasClass ? "class" : d[d.length - 1]]));
   }

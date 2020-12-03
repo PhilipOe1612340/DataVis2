@@ -7,8 +7,6 @@ var d3 = globalThis.d3;
 const datasets = ["artificial_labeled.csv", "education_labeled.csv", "iris_labeled.csv", "mtcars_labeled.csv", "wine_labeled.csv"];
 const loadedDatasets = {};
 
-let plot;
-
 const sel = document.getElementById("select");
 const nothing = document.createElement("option");
 nothing.innerText = "select dataset";
@@ -23,8 +21,6 @@ function readDatasetFromHash() {
 window.onpopstate = window.history.onpushstate = readDatasetFromHash;
 
 customElements.whenDefined("scatter-plot").then(() => {
-  plot = document.body.appendChild(new ScatterPlot());
-
   datasets.forEach((d) => {
     const node = document.createElement("option");
     node.value = d;
@@ -43,7 +39,7 @@ sel.addEventListener("change", async (e) => {
 });
 
 mstCheckbox.addEventListener("change", async (e) => {
-  plot.update(mstCheckbox.checked);
+  showData();
 });
 
 /**
@@ -60,11 +56,55 @@ async function loadData(value) {
 }
 
 /**
- * @param {any[]} data
+ * @param {any[] & {columns: string[]}} data
  */
 function showData(data) {
-  const dimensionNames = Object.values(data.columns).slice(0, 2);
-  plot.setDataset(DataNode.convertDataset(data));
-  plot.setDimensions(dimensionNames);
+  clearContainer();
+
+  const axes = data.columns;
+  const hasClass = axes.includes("class");
+  const classDimension = axes.find((dim, i) => hasClass ? dim === 'class' : i === axes.length - 1);
+  data.columns = data.columns.filter(d => d !== classDimension);
+  document.documentElement.style.setProperty('--grid', '1fr '.repeat(data.columns.length));
+
+  makeDataMatrix(data).forEach(dim => {
+    data.columns = [...dim, classDimension];
+    const dataset = DataNode.convertDataset(data)
+    addNewPlot(dataset, data.columns, axes.length);
+  })
+
+}
+
+/**
+ * 
+ * @param {DataNode[]} dataset
+ * @param {string[]} dimensions
+ */
+function addNewPlot(dataset, dimensions, size) {
+  const plot = document.getElementById('plotContainer').appendChild(new ScatterPlot(size));
+
+  plot.setDataset(dataset);
+  plot.setDimensions(dimensions);
   plot.update(mstCheckbox.value);
+}
+
+/**
+ *
+ * @param {any[] & {columns: string[]}} data
+ * @returns {string[][]}
+ */
+function makeDataMatrix(data) {
+  const matrix = data.columns.flatMap((dim1, _i, all) => all.map(dim2 => [dim1, dim2]));
+  matrix.forEach(([dim1, dim2]) => {
+    if(dim1 === dim2){
+
+    }
+    
+  });
+  return matrix;
+}
+
+function clearContainer() {
+  const el = document.getElementById('plotContainer');
+  Array.from(el.children).forEach(child => child.remove());
 }
