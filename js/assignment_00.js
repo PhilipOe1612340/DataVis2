@@ -14,6 +14,8 @@ nothing.innerText = "select dataset";
 sel.appendChild(nothing);
 
 const mstCheckbox = document.getElementById("checkbox-mst");
+const outlyingMeasureSlider = document.getElementById("outlying-slider");
+const currentOutlyingMeasure = document.getElementById("current-outlying");
 
 function readDatasetFromHash() {
   sel.value = window.location.hash.substr(1);
@@ -77,35 +79,22 @@ function showData(data) {
     outlyingMeasures.push(parseFloat(plotOutlyingMeasure).toFixed(2));
   })
 
-  // Create span element to display current outlying measure
-  let currentOutlyingMeasure = document.createElement("span");
-  // Create slider
-  let slider = document.createElement("input");
-  slider.type = "range";
-  slider.min = Math.min(...outlyingMeasures).toString();
-  slider.max = Math.max(...outlyingMeasures).toString()
-  slider.step = "0.05";
-  slider.value = Math.max(...outlyingMeasures).toString();
-  slider.className = "slider";
+  outlyingMeasureSlider.min = Math.min(...outlyingMeasures).toString();
+  outlyingMeasureSlider.max = Math.max(...outlyingMeasures).toString()
+  outlyingMeasureSlider.step = "0.01";
+  outlyingMeasureSlider.value = Math.max(...outlyingMeasures).toString();
 
-  currentOutlyingMeasure.innerText = "Outlying measure: " + slider.value;
+  currentOutlyingMeasure.innerText = "Outlying measure: " + outlyingMeasureSlider.value;
 
-  // Add span and slider under dropdown
-  const sliderContainer = document.getElementById("slider-container");
-  sliderContainer.appendChild(currentOutlyingMeasure);
-  sliderContainer.appendChild(slider);
-
-  slider.addEventListener("change", async (e) => {
+  outlyingMeasureSlider.addEventListener("change", async (e) => {
     let plots = document.getElementById('plotContainer').children;
     for (let i=0; i < plots.length; i++) {
       plots[i].className = "";
     }
-    currentOutlyingMeasure.innerText = "Outlying measure: " + slider.value;
-    const maxOutlying = parseFloat(slider.value);
+    currentOutlyingMeasure.innerText = "Outlying measure: " + outlyingMeasureSlider.value;
+    const maxOutlying = parseFloat(outlyingMeasureSlider.value);
     let plotIndexesToHide = outlyingMeasures.map((elem, idx) => elem > maxOutlying ? idx : '').filter(String);
-    console.log('TOHide', plotIndexesToHide)
     plotIndexesToHide.map((idx) => plots[idx].className = "faded");
-    console.log(plots);
   })
 
 
