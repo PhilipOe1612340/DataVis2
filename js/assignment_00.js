@@ -6,6 +6,7 @@ var d3 = globalThis.d3;
 
 const datasets = ["artificial_labeled.csv", "education_labeled.csv", "iris_labeled.csv", "mtcars_labeled.csv", "wine_labeled.csv"];
 const loadedDatasets = {};
+let outlyingMeasures = [];
 
 const sel = document.getElementById("select");
 const nothing = document.createElement("option");
@@ -13,6 +14,8 @@ nothing.innerText = "select dataset";
 sel.appendChild(nothing);
 
 const mstCheckbox = document.getElementById("checkbox-mst");
+const outlyingSlider = document.getElementById("outlying-range");
+const currentOutlying = document.getElementById("current-outlying");
 
 function readDatasetFromHash() {
   sel.value = window.location.hash.substr(1);
@@ -35,12 +38,20 @@ sel.addEventListener("change", async (e) => {
   if (!value) return;
   const data = await loadData(value);
   showData(data);
+  outlyingSlider.setAttribute("min", 100);
+  outlyingSlider.setAttribute("max", 200);
+
   window.history.replaceState(value, "Dataset: " + value, "#" + value);
 });
 
 mstCheckbox.addEventListener("change", async (e) => {
   showData();
 });
+
+outlyingSlider.addEventListener("change", async (e) => {
+  currentOutlying.innerText = "Outlying measure: " + outlyingSlider.value;
+
+})
 
 /**
  * @param {string} value
@@ -60,6 +71,7 @@ async function loadData(value) {
  */
 function showData(data) {
   clearContainer();
+  outlyingMeasures = [];
 
   const axes = data.columns;
   const hasClass = axes.includes("class");

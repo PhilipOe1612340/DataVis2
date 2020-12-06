@@ -10,7 +10,7 @@ select {
   display: block;
 }
 
-#show-mst {
+#show-mst, #slider-container {
   display: flex;
   justify-content: center;
   align-items: center;
