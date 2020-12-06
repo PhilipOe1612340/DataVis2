@@ -16,6 +16,10 @@ select {
   align-items: center;
 }
 
+.faded {
+  opacity: 0.2;
+}
+
 option:first-child::selection {
   background: lightblue;
 }

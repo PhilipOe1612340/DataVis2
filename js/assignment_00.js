@@ -96,7 +96,16 @@ function showData(data) {
   sliderContainer.appendChild(slider);
 
   slider.addEventListener("change", async (e) => {
+    let plots = document.getElementById('plotContainer').children;
+    for (let i=0; i < plots.length; i++) {
+      plots[i].className = "";
+    }
     currentOutlyingMeasure.innerText = "Outlying measure: " + slider.value;
+    const maxOutlying = parseFloat(slider.value);
+    let plotIndexesToHide = outlyingMeasures.map((elem, idx) => elem > maxOutlying ? idx : '').filter(String);
+    console.log('TOHide', plotIndexesToHide)
+    plotIndexesToHide.map((idx) => plots[idx].className = "faded");
+    console.log(plots);
   })
 
 
