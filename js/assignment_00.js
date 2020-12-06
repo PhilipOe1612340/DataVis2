@@ -14,8 +14,6 @@ nothing.innerText = "select dataset";
 sel.appendChild(nothing);
 
 const mstCheckbox = document.getElementById("checkbox-mst");
-const outlyingSlider = document.getElementById("outlying-range");
-const currentOutlying = document.getElementById("current-outlying");
 
 function readDatasetFromHash() {
   sel.value = window.location.hash.substr(1);
@@ -38,8 +36,6 @@ sel.addEventListener("change", async (e) => {
   if (!value) return;
   const data = await loadData(value);
   showData(data);
-  outlyingSlider.setAttribute("min", 100);
-  outlyingSlider.setAttribute("max", 200);
 
   window.history.replaceState(value, "Dataset: " + value, "#" + value);
 });
@@ -47,11 +43,6 @@ sel.addEventListener("change", async (e) => {
 mstCheckbox.addEventListener("change", async (e) => {
   showData();
 });
-
-outlyingSlider.addEventListener("change", async (e) => {
-  currentOutlying.innerText = "Outlying measure: " + outlyingSlider.value;
-
-})
 
 /**
  * @param {string} value
@@ -82,10 +73,36 @@ function showData(data) {
   makeDataMatrix(data).forEach(dim => {
     data.columns = [...dim, classDimension];
     const dataset = DataNode.convertDataset(data)
-    addNewPlot(dataset, data.columns, axes.length);
+    let plotOutlyingMeasure = addNewPlot(dataset, data.columns, axes.length);
+    outlyingMeasures.push(parseFloat(plotOutlyingMeasure).toFixed(2));
   })
 
+  // Create span element to display current outlying measure
+  let currentOutlyingMeasure = document.createElement("span");
+  // Create slider
+  let slider = document.createElement("input");
+  slider.type = "range";
+  slider.min = Math.min(...outlyingMeasures).toString();
+  slider.max = Math.max(...outlyingMeasures).toString()
+  slider.step = "0.05";
+  slider.value = Math.max(...outlyingMeasures).toString();
+  slider.className = "slider";
+
+  currentOutlyingMeasure.innerText = "Outlying measure: " + slider.value;
+
+  // Add span and slider under dropdown
+  const sliderContainer = document.getElementById("slider-container");
+  sliderContainer.appendChild(currentOutlyingMeasure);
+  sliderContainer.appendChild(slider);
+
+  slider.addEventListener("change", async (e) => {
+    currentOutlyingMeasure.innerText = "Outlying measure: " + slider.value;
+  })
+
+
 }
+
+
 
 /**
  * 
@@ -97,7 +114,7 @@ function addNewPlot(dataset, dimensions, size) {
 
   plot.setDataset(dataset);
   plot.setDimensions(dimensions);
-  plot.update(mstCheckbox.value);
+  return plot.update(mstCheckbox.value);
 }
 
 /**

@@ -52,11 +52,13 @@ class ScatterPlot extends HTMLElement {
         i.source.markAsOutlier();
       }
     });
+    return outlying.measure
   }
 
   update(showMst) {
     this.rootEl.selectAll("*").remove();
     this.makeContainer();
+    let outlyingMeasure = null;
 
     // Add X axis
     const x = d3
@@ -100,7 +102,7 @@ class ScatterPlot extends HTMLElement {
 
     // Plot Minimum Spanning Tree if wanted
     if (showMst) {
-      this.addMSTInformation();
+      outlyingMeasure = this.addMSTInformation();
     } else {
       this.data.forEach((d) => (d.isOutlier = false));
     }
@@ -186,6 +188,8 @@ class ScatterPlot extends HTMLElement {
       .on("mouseout", (d, i) => {
         tooltip.transition().delay(500).style("display", "none");
       });
+
+    return outlyingMeasure;
   }
 
   /**
