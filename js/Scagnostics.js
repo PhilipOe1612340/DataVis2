@@ -15,9 +15,8 @@ class Scagnostics {
         longEdges.push(elem);
       }
     });
-
     const overallEdgesSum = weights.reduce((a, b) => a + b, 0);
-    const longEdgesSum = longEdges.reduce((a, b) => a.weight + b.weight, 0);
+    const longEdgesSum = longEdges.reduce((a, b) => a + b.weight, 0);
     return { measure: longEdgesSum / overallEdgesSum, longEdges };
   }
 
