@@ -1,3 +1,6 @@
+:root {
+  --grid: 4;
+}
 p {
   margin: 0;
 }
@@ -7,10 +10,14 @@ select {
   display: block;
 }
 
-#show-mst {
+#show-mst, #slider-container {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.faded {
+  opacity: 0.2;
 }
 
 option:first-child::selection {
@@ -37,4 +44,12 @@ option:checked {
 
 td:nth-child(2n) {
   text-align: right;
+}
+
+#plotContainer {
+  display: grid;
+  grid-template-columns: var(--grid);
+  grid-template-rows: var(--grid);
+  max-width: 100vw;
+  max-height: 100vh;
 }
