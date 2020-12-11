@@ -12,21 +12,37 @@
 </head>
 
 <body>
-<select name="Dataset" id="select"></select>
-<div id="show-mst">
-    <label><input id="checkbox-mst" type="checkbox" checked/> Show MST</label>
+<ul class="nav nav-tabs" id="plot-tabs" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link" id="scatterplot-tab" data-toggle="tab" href="#scatterplot" role="tab" aria-controls="profile" aria-selected="false">Scatterplot Matrix</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link active" id="pcp-tab" data-toggle="tab" href="#pcp" role="tab" aria-controls="home" aria-selected="true">Parallel Coordinates</a>
+    </li>
+</ul>
+<div>
+    <div class="tab-pane fade" id="scatterplot" role="tabpanel" aria-labelledby="scatterplot-tab">
+        <select name="Dataset" id="select"></select>
+        <div id="show-mst">
+            <label><input id="checkbox-mst" type="checkbox" checked/> Show MST</label>
+        </div>
+        <div id="slider-container">
+            <span id="current-outlying">Outlying measure: 0</span>
+            <input type="range" min="1" max="100" value="0" class="slider" id="outlying-slider">
+        </div>
+        <div id="plotContainer"></div>
+    </div>
+    <div class="tab-pane fade show active" id="pcp" role="tabpanel" aria-labelledby="pcp-tab">
+
+    </div>
 </div>
-<div id="slider-container">
-    <span id="current-outlying">Outlying measure: 0</span>
-    <input type="range" min="1" max="100" value="0" class="slider" id="outlying-slider">
-</div>
+
 <script src="js/DataNode.js"></script>
 <script src="js/Scagnostics.js"></script>
 <script src="js/MST.js"></script>
 <script src="js/ScatterPlot.js"></script>
 <script src="js/assignment_00.js"></script>
 
-<div id="plotContainer"></div>
 </body>
 
 </html>
