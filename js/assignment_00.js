@@ -4,6 +4,8 @@
 // @ts-ignore
 var d3 = globalThis.d3;
 
+let selectedTab = 'pcp-tab';
+
 const datasets = ["artificial_labeled.csv", "education_labeled.csv", "iris_labeled.csv", "mtcars_labeled.csv", "wine_labeled.csv"];
 const loadedDatasets = {};
 let outlyingMeasures = [];
@@ -34,16 +36,32 @@ customElements.whenDefined("scatter-plot").then(() => {
 });
 
 sel.addEventListener("change", async (e) => {
+  $('#plot-tabs a').on('show.bs.tab', (e) => {
+    selectedTab = e.target.id;
+    sel.dispatchEvent(new Event("change"));
+  })
   const value = e.target.value;
   if (!value) return;
   const data = await loadData(value);
-  showData(data);
+  console.log('loaded', data);
+  console.log(selectedTab)
+  if (selectedTab === 'scatterplot-tab') {
+    showDataScatterPlot(data);
+  }
+  else {
+    showDataParallelCoordinates(data)
+  }
 
   window.history.replaceState(value, "Dataset: " + value, "#" + value);
 });
 
 mstCheckbox.addEventListener("change", async (e) => {
-  showData();
+  if (selectedTab === 'scatterplot-tab') {
+    showDataScatterPlot();
+  }
+  else {
+    showDataParallelCoordinates()
+  }
 });
 
 /**
@@ -62,8 +80,8 @@ async function loadData(value) {
 /**
  * @param {any[] & {columns: string[]}} data
  */
-function showData(data) {
-  clearContainer();
+function showDataScatterPlot(data) {
+  clearContainer('scatterplot-container');
   outlyingMeasures = [];
 
   const axes = data.columns;
@@ -87,7 +105,7 @@ function showData(data) {
   currentOutlyingMeasure.innerText = "Outlying measure: " + outlyingMeasureSlider.value;
 
   outlyingMeasureSlider.addEventListener("change", async (e) => {
-    let plots = document.getElementById('plotContainer').children;
+    let plots = document.getElementById('scatterplot-container').children;
     for (let i=0; i < plots.length; i++) {
       plots[i].className = "";
     }
@@ -100,15 +118,31 @@ function showData(data) {
 
 }
 
+function showDataParallelCoordinates(data) {
+  clearContainer('pcp-container');
+
+  const axes = data.columns;
+  const hasClass = axes.includes("class");
+  const classDimension = axes.find((dim, i) => hasClass ? dim === 'class' : i === axes.length - 1);
+  data.columns = data.columns.filter(d => d !== classDimension);
+
+  const plot = document.getElementById('pcp-container').appendChild(new ParallelCoordinates());
+
+  plot.setDataset(data);
+  plot.setDimensions(data.columns);
+  return plot.update();
+}
+
 
 
 /**
- * 
+ *
  * @param {DataNode[]} dataset
  * @param {string[]} dimensions
+ * @param size
  */
 function addNewPlot(dataset, dimensions, size) {
-  const plot = document.getElementById('plotContainer').appendChild(new ScatterPlot(size));
+  const plot = document.getElementById('scatterplot-container').appendChild(new ScatterPlot(size));
 
   plot.setDataset(dataset);
   plot.setDimensions(dimensions);
@@ -131,7 +165,7 @@ function makeDataMatrix(data) {
   return matrix;
 }
 
-function clearContainer() {
-  const el = document.getElementById('plotContainer');
+function clearContainer(elementId) {
+  const el = document.getElementById(elementId);
   Array.from(el.children).forEach(child => child.remove());
 }
