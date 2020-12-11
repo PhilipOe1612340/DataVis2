@@ -43,8 +43,6 @@ sel.addEventListener("change", async (e) => {
   const value = e.target.value;
   if (!value) return;
   const data = await loadData(value);
-  console.log('loaded', data);
-  console.log(selectedTab)
   if (selectedTab === 'scatterplot-tab') {
     showDataScatterPlot(data);
   }

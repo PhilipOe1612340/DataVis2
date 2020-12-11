@@ -1,3 +1,7 @@
+// @ts-check
+/**@type {import("d3")} (only for the type check) */
+// @ts-ignore
+
 var d3 = globalThis.d3;
 
 class ParallelCoordinates extends HTMLElement {
@@ -24,7 +28,6 @@ class ParallelCoordinates extends HTMLElement {
 
     makeContainer() {
         clearContainer('scatterplot-container');
-        clearContainer('pcp-container');
         this.d3Selection = this.rootEl
             .attr("width", this.width + this.margin.left + this.margin.right)
             .attr("height", this.height + this.margin.top + this.margin.bottom)
@@ -36,8 +39,6 @@ class ParallelCoordinates extends HTMLElement {
         this.rootEl.selectAll("*").remove();
         this.makeContainer();
 
-        let g = this.rootEl.append("g").attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
-
         const x = d3.scalePoint()
             .range([0, this.width])
             .padding(1)
@@ -47,7 +48,7 @@ class ParallelCoordinates extends HTMLElement {
         for (let i in this.dimensionNames) {
             let dim = this.dimensionNames[i]
             y[dim] = d3.scaleLinear()
-                .domain(d3.extent(data, function (d) {
+                .domain(d3.extent(this.data,  (d) => {
                     return +d[dim];
                 }))
                 .range([this.height, 0])
@@ -59,31 +60,26 @@ class ParallelCoordinates extends HTMLElement {
             }));
         }
 
-        g.selectAll("pcp-path")
-            .data(data)
+        this.d3Selection.selectAll("pcp-path")
+            .data(this.data)
             .enter().append("path")
             .attr("d", calculateLineCoordinates)
             .style("fill", "none")
             .style("stroke", "#69b3a2")
             .style("opacity", 0.5)
 
-        // Draw the axis:
-        g.selectAll("pcp-axis")
-            // For each dimension of the dataset I add a 'g' element:
+        this.d3Selection.selectAll("pcp-axis")
             .data(this.dimensionNames).enter()
             .append("g")
-            // I translate this element to its right position on the x axis
             .attr("transform", function (d) {
                 return "translate(" + x(d) + ")";
             })
-            // And I build the axis with the call function
             .each((d) => {
                 d3.select(this).call(d3.axisLeft().scale(y[d]));
             })
-            // Add axis title
             .append("text")
             .style("text-anchor", "middle")
-            .attr("y", -9)
+            .attr("y", 2)
             .text( (d) => {
                 return d;
             })
@@ -92,7 +88,19 @@ class ParallelCoordinates extends HTMLElement {
 
     }
 
+    setDataset(data) {
+        this.data = data;
+        this.uniqueClasses = this.data.map((d) => d.className).filter((value, index, self) => self.indexOf(value) === index);
+        // Assign random color to each class label
+        this.colors = {};
+        for (let c of this.uniqueClasses) {
+            this.colors[c] = "#00" + (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 4);
+        }
+    }
+
     setDimensions(dimensionNames) {
         this.dimensionNames = dimensionNames;
     }
 }
+
+window.customElements.define("pcp-plot", ParallelCoordinates);
