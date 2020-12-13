@@ -52,7 +52,12 @@ sel.addEventListener("change", async (e) => {
 });
 
 mstCheckbox.addEventListener("change", async (e) => {
-  sel.dispatchEvent(new Event("change"));
+  if (selectedTab === 'scatterplot-tab') {
+    showDataScatterPlot();
+  } else {
+    showDataParallelCoordinates();
+  }
+  readDatasetFromHash();
 });
 
 /**
@@ -126,7 +131,7 @@ function addNewPlot(dataset, dimensions, size) {
 
   plot.setDataset(dataset);
   plot.setDimensions(dimensions);
-  return plot.update(mstCheckbox.checked);
+  return plot.update(mstCheckbox.value);
 }
 
 /**
