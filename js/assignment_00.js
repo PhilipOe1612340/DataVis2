@@ -4,8 +4,10 @@
 // @ts-ignore
 var d3 = globalThis.d3;
 
+let selectedTab = 'pcp-tab';
+
+const colorArray = ['#FF6633', '#00B3E6', '#003050', '#4D80CC', '#9900B3', '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF'];
 const datasets = ["artificial_labeled.csv", "education_labeled.csv", "iris_labeled.csv", "mtcars_labeled.csv", "wine_labeled.csv"];
-const loadedDatasets = {};
 let outlyingMeasures = [];
 
 const sel = document.getElementById("select");
@@ -34,36 +36,44 @@ customElements.whenDefined("scatter-plot").then(() => {
 });
 
 sel.addEventListener("change", async (e) => {
+  $('#plot-tabs a').on('show.bs.tab', (e) => {
+    selectedTab = e.target.id;
+    sel.dispatchEvent(new Event("change"));
+  })
   const value = e.target.value;
   if (!value) return;
   const data = await loadData(value);
-  showData(data);
+  if (selectedTab === 'scatterplot-tab') {
+    showDataScatterPlot(data);
+  } else {
+    showDataParallelCoordinates(data);
+  }
 
   window.history.replaceState(value, "Dataset: " + value, "#" + value);
 });
 
 mstCheckbox.addEventListener("change", async (e) => {
-  showData();
+  const data = await loadData(window.location.hash.substr(1));
+  if (selectedTab === 'scatterplot-tab') {
+    showDataScatterPlot(data);
+  } else {
+    showDataParallelCoordinates(data);
+  }
+  readDatasetFromHash();
 });
 
 /**
  * @param {string} value
  */
 async function loadData(value) {
-  const data = loadedDatasets[value] || (await d3.csv("/datasets/" + value));
-
-  // cache datasets
-  if (!loadedDatasets[value]) {
-    loadedDatasets[value] = data;
-  }
-  return data;
+  return await d3.csv("/datasets/" + value);
 }
 
 /**
  * @param {any[] & {columns: string[]}} data
  */
-function showData(data) {
-  clearContainer();
+function showDataScatterPlot(data) {
+  clearContainer('scatterplot-container');
   outlyingMeasures = [];
 
   const axes = data.columns;
@@ -74,10 +84,10 @@ function showData(data) {
 
   makeDataMatrix(data).forEach(dim => {
     data.columns = [...dim, classDimension];
-    const dataset = DataNode.convertDataset(data)
+    const dataset = DataNode.convertDataset(data);
     let plotOutlyingMeasure = addNewPlot(dataset, data.columns, axes.length);
     outlyingMeasures.push(parseFloat(plotOutlyingMeasure).toFixed(2));
-  })
+  });
 
   outlyingMeasureSlider.min = Math.min(...outlyingMeasures).toString();
   outlyingMeasureSlider.max = Math.max(...outlyingMeasures).toString()
@@ -87,8 +97,8 @@ function showData(data) {
   currentOutlyingMeasure.innerText = "Outlying measure: " + outlyingMeasureSlider.value;
 
   outlyingMeasureSlider.addEventListener("change", async (e) => {
-    let plots = document.getElementById('plotContainer').children;
-    for (let i=0; i < plots.length; i++) {
+    let plots = document.getElementById('scatterplot-container').children;
+    for (let i = 0; i < plots.length; i++) {
       plots[i].className = "";
     }
     currentOutlyingMeasure.innerText = "Outlying measure: " + outlyingMeasureSlider.value;
@@ -100,19 +110,28 @@ function showData(data) {
 
 }
 
+function showDataParallelCoordinates(data) {
+  clearContainer('pcp-container');
 
+  const plot = document.getElementById('pcp-container').appendChild(new ParallelCoordinates());
+
+  plot.setDimensions(data.columns);
+  plot.setDataset(data);
+  return plot.update(mstCheckbox.checked);
+}
 
 /**
- * 
+ *
  * @param {DataNode[]} dataset
  * @param {string[]} dimensions
+ * @param size
  */
 function addNewPlot(dataset, dimensions, size) {
-  const plot = document.getElementById('plotContainer').appendChild(new ScatterPlot(size));
+  const plot = document.getElementById('scatterplot-container').appendChild(new ScatterPlot(size));
 
   plot.setDataset(dataset);
   plot.setDimensions(dimensions);
-  return plot.update(mstCheckbox.value);
+  return plot.update(mstCheckbox.checked);
 }
 
 /**
@@ -122,16 +141,10 @@ function addNewPlot(dataset, dimensions, size) {
  */
 function makeDataMatrix(data) {
   const matrix = data.columns.flatMap((dim1, _i, all) => all.map(dim2 => [dim1, dim2]));
-  matrix.forEach(([dim1, dim2]) => {
-    if(dim1 === dim2){
-
-    }
-    
-  });
   return matrix;
 }
 
-function clearContainer() {
-  const el = document.getElementById('plotContainer');
+function clearContainer(elementId) {
+  const el = document.getElementById(elementId);
   Array.from(el.children).forEach(child => child.remove());
 }
