@@ -5,12 +5,8 @@ p {
   margin: 0;
 }
 
-select {
-  margin: 40px auto;
-  display: block;
-}
-
-#show-mst, #slider-container {
+#show-mst,
+#slider-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -57,4 +53,20 @@ td:nth-child(2n) {
 #pcp-container {
   max-width: 100vw;
   max-height: 100vh;
+}
+
+#header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 5px;
+  align-items: flex-start;
+}
+
+.fade:not(.show) {
+  display: none;
+}
+
+body {
+  overflow-x: hidden;
 }

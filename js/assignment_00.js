@@ -7,7 +7,6 @@ var d3 = globalThis.d3;
 let selectedTab = 'pcp-tab';
 
 const datasets = ["artificial_labeled.csv", "education_labeled.csv", "iris_labeled.csv", "mtcars_labeled.csv", "wine_labeled.csv"];
-const loadedDatasets = {};
 let outlyingMeasures = [];
 
 const sel = document.getElementById("select");
@@ -45,9 +44,8 @@ sel.addEventListener("change", async (e) => {
   const data = await loadData(value);
   if (selectedTab === 'scatterplot-tab') {
     showDataScatterPlot(data);
-  }
-  else {
-    showDataParallelCoordinates(data)
+  } else {
+    showDataParallelCoordinates(data);
   }
 
   window.history.replaceState(value, "Dataset: " + value, "#" + value);
@@ -56,23 +54,17 @@ sel.addEventListener("change", async (e) => {
 mstCheckbox.addEventListener("change", async (e) => {
   if (selectedTab === 'scatterplot-tab') {
     showDataScatterPlot();
+  } else {
+    showDataParallelCoordinates();
   }
-  else {
-    showDataParallelCoordinates()
-  }
+  readDatasetFromHash();
 });
 
 /**
  * @param {string} value
  */
 async function loadData(value) {
-  const data = loadedDatasets[value] || (await d3.csv("/datasets/" + value));
-
-  // cache datasets
-  if (!loadedDatasets[value]) {
-    loadedDatasets[value] = data;
-  }
-  return data;
+  return await d3.csv("/datasets/" + value);
 }
 
 /**
@@ -90,10 +82,10 @@ function showDataScatterPlot(data) {
 
   makeDataMatrix(data).forEach(dim => {
     data.columns = [...dim, classDimension];
-    const dataset = DataNode.convertDataset(data)
+    const dataset = DataNode.convertDataset(data);
     let plotOutlyingMeasure = addNewPlot(dataset, data.columns, axes.length);
     outlyingMeasures.push(parseFloat(plotOutlyingMeasure).toFixed(2));
-  })
+  });
 
   outlyingMeasureSlider.min = Math.min(...outlyingMeasures).toString();
   outlyingMeasureSlider.max = Math.max(...outlyingMeasures).toString()
@@ -104,7 +96,7 @@ function showDataScatterPlot(data) {
 
   outlyingMeasureSlider.addEventListener("change", async (e) => {
     let plots = document.getElementById('scatterplot-container').children;
-    for (let i=0; i < plots.length; i++) {
+    for (let i = 0; i < plots.length; i++) {
       plots[i].className = "";
     }
     currentOutlyingMeasure.innerText = "Outlying measure: " + outlyingMeasureSlider.value;
@@ -119,15 +111,10 @@ function showDataScatterPlot(data) {
 function showDataParallelCoordinates(data) {
   clearContainer('pcp-container');
 
-  const axes = data.columns;
-  const hasClass = axes.includes("class");
-  const classDimension = axes.find((dim, i) => hasClass ? dim === 'class' : i === axes.length - 1);
-  data.columns = data.columns.filter(d => d !== classDimension);
-
   const plot = document.getElementById('pcp-container').appendChild(new ParallelCoordinates());
-
-  plot.setDataset(data);
+  
   plot.setDimensions(data.columns);
+  plot.setDataset(data);
   return plot.update();
 }
 
@@ -154,12 +141,6 @@ function addNewPlot(dataset, dimensions, size) {
  */
 function makeDataMatrix(data) {
   const matrix = data.columns.flatMap((dim1, _i, all) => all.map(dim2 => [dim1, dim2]));
-  matrix.forEach(([dim1, dim2]) => {
-    if(dim1 === dim2){
-
-    }
-    
-  });
   return matrix;
 }
 
