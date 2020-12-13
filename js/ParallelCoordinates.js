@@ -3,8 +3,6 @@
 
 var d3 = globalThis.d3;
 
-const colorArray = ['#FF6633', '#00B3E6', '#003050', '#4D80CC', '#9900B3', '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF'];
-
 class ParallelCoordinates extends HTMLElement {
     constructor() {
         super();

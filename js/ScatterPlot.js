@@ -11,6 +11,7 @@ const margin = {
 };
 
 
+
 class ScatterPlot extends HTMLElement {
     constructor(size) {
         super();
@@ -106,7 +107,10 @@ class ScatterPlot extends HTMLElement {
         if (showMst) {
             outlyingMeasure = this.addMSTInformation();
         } else {
-            this.data.forEach((d) => (d.isOutlier = false));
+            this.data.forEach((d) => {
+                d.isOutlier = false;
+                d.links = [];
+            });
         }
 
         // Add tooltip
@@ -125,27 +129,27 @@ class ScatterPlot extends HTMLElement {
         const dots = this.d3Selection.append("g");
 
         // plot mst lines
-        if (showMst) {
-            dots
-                .selectAll("line")
-                .data(this.data)
-                .enter()
-                .each((d) => {
-                    for (const link of d.links) {
-                        dots
-                            .append("line")
-                            .attr("x1", link.source.xCoord)
-                            .attr("y1", link.source.yCoord)
-                            .attr("x2", link.target.xCoord)
-                            .attr("y2", link.target.yCoord)
-                            .attr("stroke-width", 1.5)
-                            .attr("opacity", 0.65)
-                            .attr("stroke", "black");
-                    }
-                });
-        } else {
-            this.d3Selection.selectAll("line").remove();
-        }
+        // if (showMst) {
+        dots
+            .selectAll("line")
+            .data(this.data)
+            .enter()
+            .each((d) => {
+                for (const link of d.links) {
+                    dots
+                        .append("line")
+                        .attr("x1", link.source.xCoord)
+                        .attr("y1", link.source.yCoord)
+                        .attr("x2", link.target.xCoord)
+                        .attr("y2", link.target.yCoord)
+                        .attr("stroke-width", 1.5)
+                        .attr("opacity", 0.65)
+                        .attr("stroke", "black");
+                }
+            });
+        // } else {
+        //     this.d3Selection.selectAll("line").remove();
+        // }
 
         dots
             .selectAll("cicle")
@@ -200,10 +204,11 @@ class ScatterPlot extends HTMLElement {
     setDataset(data) {
         this.data = data;
         this.uniqueClasses = this.data.map((d) => d.className).filter((value, index, self) => self.indexOf(value) === index);
-        // Assign random color to each class label
+
         this.colors = {};
-        for (let c of this.uniqueClasses) {
-            this.colors[c] = "#00" + (0x1000000 + Math.random() * 0xffffff).toString(16).substr(1, 4);
+        for (let i = 0; i < this.uniqueClasses.length; i++) {
+            const c = this.uniqueClasses[i];
+            this.colors[c] = colorArray[i];
         }
     }
 

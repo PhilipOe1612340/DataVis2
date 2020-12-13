@@ -6,6 +6,7 @@ var d3 = globalThis.d3;
 
 let selectedTab = 'pcp-tab';
 
+const colorArray = ['#FF6633', '#00B3E6', '#003050', '#4D80CC', '#9900B3', '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF'];
 const datasets = ["artificial_labeled.csv", "education_labeled.csv", "iris_labeled.csv", "mtcars_labeled.csv", "wine_labeled.csv"];
 let outlyingMeasures = [];
 
@@ -52,10 +53,11 @@ sel.addEventListener("change", async (e) => {
 });
 
 mstCheckbox.addEventListener("change", async (e) => {
+  const data = await loadData(window.location.hash.substr(1));
   if (selectedTab === 'scatterplot-tab') {
-    showDataScatterPlot();
+    showDataScatterPlot(data);
   } else {
-    showDataParallelCoordinates();
+    showDataParallelCoordinates(data);
   }
   readDatasetFromHash();
 });
@@ -112,13 +114,11 @@ function showDataParallelCoordinates(data) {
   clearContainer('pcp-container');
 
   const plot = document.getElementById('pcp-container').appendChild(new ParallelCoordinates());
-  
+
   plot.setDimensions(data.columns);
   plot.setDataset(data);
-  return plot.update();
+  return plot.update(mstCheckbox.checked);
 }
-
-
 
 /**
  *
@@ -131,7 +131,7 @@ function addNewPlot(dataset, dimensions, size) {
 
   plot.setDataset(dataset);
   plot.setDimensions(dimensions);
-  return plot.update(mstCheckbox.value);
+  return plot.update(mstCheckbox.checked);
 }
 
 /**
