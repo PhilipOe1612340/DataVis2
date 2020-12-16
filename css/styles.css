@@ -70,3 +70,7 @@ td:nth-child(2n) {
 body {
   overflow-x: hidden;
 }
+
+#sliders {
+  margin: 10px 40px;
+}

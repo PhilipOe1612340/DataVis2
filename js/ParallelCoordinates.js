@@ -36,7 +36,7 @@ class ParallelCoordinates extends HTMLElement {
             .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
     }
 
-    update() {
+    update(alpha, beta) {
         this.rootEl.selectAll("*").remove();
         this.makeContainer();
 
@@ -53,8 +53,42 @@ class ParallelCoordinates extends HTMLElement {
                 .range([this.height, 0]);
         }
 
+        const line = d3.line().curve(function (context) {
+            const curve = d3.curveLinear(context);
+            curve._context = context;
+            curve.point = function (x, y) {
+                console.log(this._point)
+                switch (this._point) {
+                    case 0: // on first call
+                        this._point = 1;
+                        this._line ? this._context.lineTo(x, y) : this._context.moveTo(x, y);
+                        this.x0 = x;
+                        this.y0 = y;
+                        break;
+                    case 1: // on second call
+                        this._point = 2;
+                    default: // every other call
+
+                        /**
+                         * From:
+                         * https://stackoverflow.com/questions/55231234/d3-vx-react-chart-curve-flat-at-each-data-point/55251182#55251182
+                         * 
+                         * This is wrong but I think its going in the right direction. 
+                         * As fas as I understand it this is painting a curve between the first and second point and somehow needs to skip on the second call (this seems to be normal for custom curves).
+                         * The original alpha and beta parameters where 0.5;
+                         */
+                        var x1 = this.x0 * alpha + x * beta;
+                        this._context.bezierCurveTo(x1, this.y0, x1, y, x, y);  // draw line between first and second point
+                        this.x0 = x;
+                        this.y0 = y;
+                        break;
+                }
+            }
+            return curve;
+        });
+
         const calculateLineCoordinates = (d) => {
-            return d3.line()(this.dimensionNames.map((p) => [x(p), y[p](d[p])]));
+            return line(this.dimensionNames.map((p) => [x(p), y[p](d[p])]));
         }
 
         this.d3Selection.selectAll("pcp-path")
@@ -78,6 +112,7 @@ class ParallelCoordinates extends HTMLElement {
             .text(d => this.shorten(d))
             .style("fill", "black")
     }
+
 
     /**
      * 
