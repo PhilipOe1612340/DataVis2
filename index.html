@@ -1,47 +1,50 @@
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DataVis</title>
     <script src="lib/jquery-3.5.1.min.js"></script>
     <script src="lib/bootstrap.min.js"></script>
     <script src="lib/d3.v6.min.js"></script>
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/styles.css">
-</head>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
 
-<body>
+  <body>
     <div id="header">
-        <ul class="nav nav-tabs" id="plot-tabs" role="tablist">
-            <li class="nav-item active">
-                <a class="nav-link" id="scatterplot-tab" data-toggle="tab" href="#scatterplot" role="tab"
-                    aria-selected="false">Scatterplot Matrix</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" id="pcp-tab" data-toggle="tab" href="#pcp" role="tab"
-                    aria-selected="true">Parallel Coordinates</a>
-            </li>
-        </ul>
-        <form>
-            <select class="form-control" name="Dataset" id="select"></select>
-        </form>
+      <ul class="nav nav-tabs" id="plot-tabs" role="tablist">
+        <li class="nav-item active">
+          <a class="nav-link" id="scatterplot-tab" data-toggle="tab" href="#scatterplot" role="tab" aria-selected="false">Scatterplot Matrix</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" id="pcp-tab" data-toggle="tab" href="#pcp" role="tab" aria-selected="true">Parallel Coordinates</a>
+        </li>
+      </ul>
+      <form>
+        <select class="form-control" name="Dataset" id="select"></select>
+      </form>
     </div>
     <div>
-
-        <div class="tab-pane fade" id="scatterplot" role="tabpanel" aria-labelledby="scatterplot-tab">
-            <div id="show-mst">
-                <label><input id="checkbox-mst" type="checkbox" checked /> Show MST</label>
-            </div>
-            <div id="slider-container">
-                <span id="current-outlying">Outlying measure: 0</span>
-                <input type="range" min="1" max="100" value="0" class="slider" id="outlying-slider">
-            </div>
-            <div id="scatterplot-container"></div>
+      <div class="tab-pane fade" id="scatterplot" role="tabpanel" aria-labelledby="scatterplot-tab">
+        <div id="show-mst">
+          <label><input id="checkbox-mst" type="checkbox" checked /> Show MST</label>
         </div>
-        <div class="tab-pane fade show active" id="pcp" role="tabpanel" aria-labelledby="pcp-tab">
-            <div id="pcp-container"></div>
+        <div id="slider-container">
+          <span id="current-outlying">Outlying measure: 0</span>
+          <input type="range" min="1" max="100" value="0" class="slider" id="outlying-slider" />
         </div>
+        <div id="scatterplot-container"></div>
+      </div>
+      <div class="tab-pane fade show active" id="pcp" role="tabpanel" aria-labelledby="pcp-tab">
+        <div id="pcp-container"></div>
+        <div id="sliders">
+          <label for="alphaSlider" id="alphaLabel">&alpha; = 0.125</label>
+          <input type="range" id="alphaSlider" max="0.25" min="0" step="0.001" value="0.125" />
+          <br />
+          <label for="betaSlider" id="betaLabel">&beta; = 0.5</label>
+          <input type="range" id="betaSlider" max="1" min="0" step="0.01" value="0.5" />
+        </div>
+      </div>
     </div>
 
     <script src="js/DataNode.js"></script>
@@ -50,7 +53,5 @@
     <script src="js/ParallelCoordinates.js"></script>
     <script src="js/ScatterPlot.js"></script>
     <script src="js/assignment_00.js"></script>
-
-</body>
-
+  </body>
 </html>

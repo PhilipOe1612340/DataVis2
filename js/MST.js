@@ -40,7 +40,7 @@ class MST {
     }
 
     vertices.forEach((v) => (v.links = selectedEdges.filter((l) => l.source === v.id || l.target === v.id)));
-    
+
     return {
       nodes: vertices,
       links: selectedEdges,

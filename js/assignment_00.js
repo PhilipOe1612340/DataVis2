@@ -9,6 +9,9 @@ let selectedTab = 'pcp-tab';
 const colorArray = ['#FF6633', '#00B3E6', '#003050', '#4D80CC', '#9900B3', '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF'];
 const datasets = ["artificial_labeled.csv", "education_labeled.csv", "iris_labeled.csv", "mtcars_labeled.csv", "wine_labeled.csv"];
 let outlyingMeasures = [];
+const loadedDatasets = {};
+let valueAlpha = 0.125;
+let valueBeta = 0.5;
 
 const sel = document.getElementById("select");
 const nothing = document.createElement("option");
@@ -62,11 +65,37 @@ mstCheckbox.addEventListener("change", async (e) => {
   readDatasetFromHash();
 });
 
+const sliderAlpha = document.getElementById('alphaSlider');
+sliderAlpha.addEventListener('input', () => {
+  valueAlpha = sliderAlpha.value;
+  document.getElementById('alphaLabel').innerHTML = "&alpha; = " + valueAlpha;
+  updateSliders();
+})
+const sliderBeta = document.getElementById('betaSlider');
+sliderBeta.addEventListener('input', () => {
+  valueBeta = sliderBeta.value;
+  document.getElementById('betaLabel').innerHTML = "&beta; = " + valueBeta;
+  updateSliders();
+})
+
+async function updateSliders() {
+  const data = await loadData(window.location.hash.substr(1));
+  showDataParallelCoordinates(data);
+}
+
+
+
 /**
  * @param {string} value
  */
 async function loadData(value) {
-  return await d3.csv("/datasets/" + value);
+  const data = loadedDatasets[value] || (await d3.csv("/datasets/" + value));
+
+  // cache datasets
+  if (!loadedDatasets[value]) {
+    loadedDatasets[value] = data;
+  }
+  return data;
 }
 
 /**
@@ -117,7 +146,7 @@ function showDataParallelCoordinates(data) {
 
   plot.setDimensions(data.columns);
   plot.setDataset(data);
-  return plot.update(mstCheckbox.checked);
+  return plot.update(valueAlpha, valueBeta);
 }
 
 /**
