@@ -10,7 +10,7 @@ const colorArray = ['#FF6633', '#00B3E6', '#003050', '#4D80CC', '#9900B3', '#E64
 const datasets = ["artificial_labeled.csv", "education_labeled.csv", "iris_labeled.csv", "mtcars_labeled.csv", "wine_labeled.csv"];
 let outlyingMeasures = [];
 const loadedDatasets = {};
-let valueAlpha = 0.5;
+let valueAlpha = 0.125;
 let valueBeta = 0.5;
 
 const sel = document.getElementById("select");

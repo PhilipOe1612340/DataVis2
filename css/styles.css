@@ -74,3 +74,9 @@ body {
 #sliders {
   margin: 10px 40px;
 }
+
+canvas {
+  position: absolute;
+  top: 95px;
+  left: 20px;
+}
