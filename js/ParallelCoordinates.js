@@ -32,9 +32,6 @@ class ParallelCoordinates extends HTMLElement {
         this.ctx = undefined;
     }
 
-    get bundleDimension() {
-        return this.dimensionNames[0];
-    }
 
     makeContainer() {
         clearContainer('scatterplot-container');
@@ -53,7 +50,6 @@ class ParallelCoordinates extends HTMLElement {
             .attr("class", 'foreground')
             .node();
         this.ctx = this.canvas.getContext("2d");
-        // this.ctx.stroke = 'orange';
     }
 
     update(alpha, beta) {
@@ -89,7 +85,16 @@ class ParallelCoordinates extends HTMLElement {
             .text(d => this.shorten(d))
             .style("fill", "black");
 
-        this.clusterCentroids = this.compute_cluster_centroids(this.bundleDimension);
+        this.clusterCentroids = this.compute_cluster_centroids();
+
+        this.ctx.fillStyle = 'green';
+        this.clusterCentroids.forEach((entry, i) => {
+            const x = Array.from(this.clusterCentroids.keys())[i]
+            Array.from(entry.entries()).forEach((center) => {
+                this.ctx.fillRect(x, center[1], 8, 8);
+            })
+        })
+
         for (const row of this.data) {
             this.ctx.strokeStyle = this.colors[row.class];
             this.ctx.beginPath();
@@ -106,12 +111,13 @@ class ParallelCoordinates extends HTMLElement {
     single_curve(d, ctx) {
         const centroids = this.compute_centroids(d);
         const cps = this.compute_control_points(centroids);
-
+        // const clusters = Array.from(this.clusterCentroids.entries())
+        // console.log(clusters)
         ctx.moveTo(cps[0].e(1), cps[0].e(2));
         for (let i = 1; i < cps.length; i += 3) {
             // can help for debugging
-            // for (let j = 0; j < 3; j++) {
-            //     ctx.fillRect(cps[i + j].e(1), cps[i + j].e(2), 2, 2);
+            // for (let j = 0; j < clusters.length; j++) {
+            //     // ctx.fillRect(clusters[j].e(1), clusters[j].e(2), 2, 2);
             // }
             ctx.bezierCurveTo(cps[i].e(1), cps[i].e(2), cps[i + 1].e(1), cps[i + 1].e(2), cps[i + 2].e(1), cps[i + 2].e(2));
         }
@@ -134,13 +140,10 @@ class ParallelCoordinates extends HTMLElement {
                 const cx = x + a * (this.xScale(p[i + 1]) - x);
                 let cy = y + a * (this.yScales[p[i + 1]](row[p[i + 1]]) - y);
                 if (this.bundleDimension !== null) {
-                    const leftCentroid = this.clusterCentroids.get(this.yScales[this.bundleDimension](row[this.bundleDimension])).get(p[i]);
-                    const rightCentroid = this.clusterCentroids.get(this.yScales[this.bundleDimension](row[this.bundleDimension])).get(p[i + 1]);
+                    const leftCentroid = this.clusterCentroids.get(p[i]).get(row.class);
+                    const rightCentroid = this.clusterCentroids.get(p[i + 1]).get(row.class);
                     const centroid = 0.5 * (leftCentroid + rightCentroid);
-                    // something is wrong here 🤔
-                    // --------------------------------
                     cy = centroid + (1 - this.beta) * (cy - centroid);
-                    // --------------------------------
                 }
                 centroids.push(new Vector(cx, cy));
             }
@@ -149,32 +152,19 @@ class ParallelCoordinates extends HTMLElement {
         return centroids;
     }
 
-    compute_cluster_centroids(d) {
+    compute_cluster_centroids() {
         const clusterCentroids = new Map();
-        const clusterCounts = new Map();
-        this.data.forEach((row) => {
-            const scaled = this.yScales[d](row[d]);
-            if (!clusterCounts.has(scaled)) {
-                clusterCounts.set(scaled, 0);
-            }
-            const count = clusterCounts.get(scaled);
-            clusterCounts.set(scaled, count + 1);
-        });
-
-        this.data.forEach((row) => {
-            this.dimensionNames.map((p) => {
-                const scaled = this.yScales[d](row[d]);
-                if (!clusterCentroids.has(scaled)) {
-                    const map = new Map();
-                    clusterCentroids.set(scaled, map);
-                }
-                if (!clusterCentroids.get(scaled).has(p)) {
-                    clusterCentroids.get(scaled).set(p, 0);
-                }
-                let value = clusterCentroids.get(scaled).get(p);
-                value += this.yScales[p](row[p]) / clusterCounts.get(scaled);
-                clusterCentroids.get(scaled).set(p, value);
-            });
+        this.dimensionNames.forEach(dim => {
+            const classMap = new Map();
+            this.uniqueClasses.forEach(c => {
+                // filter out values for class for this dimension
+                const d = this.data.filter(d => d.class === c).map(d => +d[dim]);
+                // compute average 
+                const sum = d.reduce((sum, curr) => sum + curr, 0);
+                // scale value
+                classMap.set(c, this.yScales[dim](sum / d.length));
+            })
+            clusterCentroids.set(dim, classMap);
         });
 
         return clusterCentroids;
@@ -233,7 +223,6 @@ class ParallelCoordinates extends HTMLElement {
 }
 
 window.customElements.define("pcp-plot", ParallelCoordinates);
-
 
 class Vector {
 
