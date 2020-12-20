@@ -98,12 +98,18 @@ class ParallelCoordinates extends HTMLElement {
         }
     }
 
+    /**
+     * draw a curve on the canvas
+     * @param {*} d data row
+     * @param {*} ctx canvas context
+     */
     single_curve(d, ctx) {
         const centroids = this.compute_centroids(d);
         const cps = this.compute_control_points(centroids);
 
         ctx.moveTo(cps[0].e(1), cps[0].e(2));
         for (let i = 1; i < cps.length; i += 3) {
+            // can help for debugging
             // for (let j = 0; j < 3; j++) {
             //     ctx.fillRect(cps[i + j].e(1), cps[i + j].e(2), 2, 2);
             // }
@@ -131,7 +137,10 @@ class ParallelCoordinates extends HTMLElement {
                     const leftCentroid = this.clusterCentroids.get(this.yScales[this.bundleDimension](row[this.bundleDimension])).get(p[i]);
                     const rightCentroid = this.clusterCentroids.get(this.yScales[this.bundleDimension](row[this.bundleDimension])).get(p[i + 1]);
                     const centroid = 0.5 * (leftCentroid + rightCentroid);
+                    // something is wrong here 🤔
+                    // --------------------------------
                     cy = centroid + (1 - this.beta) * (cy - centroid);
+                    // --------------------------------
                 }
                 centroids.push(new Vector(cx, cy));
             }
