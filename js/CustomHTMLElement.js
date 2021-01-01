@@ -1,8 +1,12 @@
-class TSNE extends HTMLElement {
+class CustomHTMLElement extends HTMLElement {
     constructor() {
         super();
-        this.model = null;
-
+        const margin = {
+            left: 10,
+            right: 10,
+            top: 30,
+            bottom: 30,
+        };
         this.data = [];
         this.dimensionNames = null;
         this.rootEl = d3.select(this).append("svg");
@@ -10,19 +14,9 @@ class TSNE extends HTMLElement {
         // this.style.width = "100%";
         this.d3Selection = undefined;
 
-        this.height = window.innerHeight / size - margin.top - margin.bottom;
-        this.width = window.innerWidth / size - margin.right - margin.left;
-    }
-
-    initModel(perplexity, learningRate, nIter) {
-        this.model = new TSNE({
-            dim: 2,
-            perplexity: perplexity,
-            earlyExaggeration: 4.0,
-            learningRate: learningRate,
-            nIter: nIter,
-            metric: 'euclidean'
-        })
+        this.height = window.innerHeight - margin.top - margin.bottom;
+        this.width = window.innerWidth  - margin.right - margin.left;
+        console.log(this.height, this.width)
     }
 
     makeContainer() {

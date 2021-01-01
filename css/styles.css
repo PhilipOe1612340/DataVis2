@@ -55,6 +55,16 @@ td:nth-child(2n) {
   max-height: 100vh;
 }
 
+#t-sne-container {
+  position: relative;
+  height: 80%;
+  width: 80%;
+}
+
+#t-sne-controls {
+  position: relative;
+}
+
 #header {
   display: flex;
   flex-direction: row;
