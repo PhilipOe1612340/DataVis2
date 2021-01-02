@@ -67,6 +67,10 @@ sel.addEventListener("change", async (e) => {
             showDataTSNE(data);
             break;
         }
+        case "mds-tab": {
+            showDataMDS(data);
+            break;
+        }
     }
     window.history.replaceState(value, "Dataset: " + value, "#" + value);
 });
@@ -190,6 +194,14 @@ function showDataTSNE(data) {
     clearContainer("t-sne-container");
     tSneModel = new CustomTSNE(perplexity, learningRate, nIter);
     const plot = document.getElementById("t-sne-container").appendChild(tSneModel);
+    plot.setDimensions(data.columns);
+    plot.setDataset(data);
+    return plot.update();
+}
+
+function showDataMDS(data){
+    clearContainer("mds-container");
+    const plot = document.getElementById("mds-container").appendChild(new CustomMDS());
     plot.setDimensions(data.columns);
     plot.setDataset(data);
     return plot.update();
