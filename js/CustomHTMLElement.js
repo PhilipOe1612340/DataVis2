@@ -39,4 +39,18 @@ class CustomHTMLElement extends HTMLElement {
     setDimensions(dimensionNames) {
         this.dimensionNames = dimensionNames;
     }
+
+    transformData(data) {
+        let result = [];
+        data.map((elem) => {
+            let values = [];
+            Object.keys(elem).forEach(key => {
+                if (key !== 'class') {
+                    values.push(elem[key]);
+                }
+            });
+            result.push(values);
+        });
+        return result;
+    }
 }

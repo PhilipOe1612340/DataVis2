@@ -80,20 +80,6 @@ class CustomTSNE extends CustomHTMLElement {
         this.projectedData = this.convertDataset(result);
     }
 
-    transformData(data) {
-        let result = [];
-        data.map((elem) => {
-            let values = [];
-            Object.keys(elem).forEach(key => {
-                if (key !== 'class') {
-                    values.push(elem[key]);
-                }
-            });
-            result.push(values);
-        });
-        return result;
-    }
-
     convertDataset(data) {
         return data.map((elem, i) => new DataNode(i, elem.data[0], elem.data[1], elem.class));
     }
