@@ -26,6 +26,7 @@ const currentOutlyingMeasure = document.getElementById("current-outlying");
 let nIter = 100;
 let learningRate = 150;
 let perplexity = 15;
+let tSneModel = null;
 
 function readDatasetFromHash() {
     sel.value = window.location.hash.substr(1);
@@ -108,6 +109,11 @@ const tSneLearningRateSlider = document.getElementById("epsilon-slider");
 tSneLearningRateSlider.addEventListener("input", () => {
   learningRate = tSneLearningRateSlider.value;
   document.getElementById("epsilon-label").innerHTML = "&epsilon; = "+ learningRate;
+});
+const tSneStartButton = document.getElementById("project-t-sne");
+tSneStartButton.addEventListener("click", async () => {
+    const data = await loadData(sel.value);
+    showDataTSNE(data);
 })
 
 async function updateSliders() {
@@ -182,10 +188,10 @@ function showDataParallelCoordinates(data) {
 
 function showDataTSNE(data) {
     clearContainer("t-sne-container");
-    const plot = document.getElementById("t-sne-container").appendChild(new CustomTSNE(perplexity, learningRate, nIter));
+    tSneModel = new CustomTSNE(perplexity, learningRate, nIter);
+    const plot = document.getElementById("t-sne-container").appendChild(tSneModel);
     plot.setDimensions(data.columns);
     plot.setDataset(data);
-    console.log(plot.data);
     return plot.update();
 }
 

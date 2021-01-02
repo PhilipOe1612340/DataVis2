@@ -11,12 +11,10 @@ class CustomHTMLElement extends HTMLElement {
         this.dimensionNames = null;
         this.rootEl = d3.select(this).append("svg");
         this.style.margin = `${margin.top}px ${margin.right}px ${margin.bottom}px ${margin.left}px`;
-        // this.style.width = "100%";
         this.d3Selection = undefined;
 
-        this.height = window.innerHeight - margin.top - margin.bottom;
-        this.width = window.innerWidth  - margin.right - margin.left;
-        console.log(this.height, this.width)
+        this.height = window.innerHeight * 0.8 - margin.top - margin.bottom;
+        this.width = window.innerWidth * 0.8  - margin.right - margin.left;
     }
 
     makeContainer() {
@@ -29,7 +27,7 @@ class CustomHTMLElement extends HTMLElement {
 
     setDataset(data) {
         this.data = data;
-        this.uniqueClasses = this.data.map((d) => d.className).filter((value, index, self) => self.indexOf(value) === index);
+        this.uniqueClasses = this.data.map((d) => d.class).filter((value, index, self) => self.indexOf(value) === index);
 
         this.colors = {};
         for (let i = 0; i < this.uniqueClasses.length; i++) {
