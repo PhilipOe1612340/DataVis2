@@ -24,43 +24,12 @@ class CustomMDS extends CustomHTMLElement {
 
         this.rootEl.selectAll("*").remove();
         this.makeContainer();
-
-        // Add X axis
-        const x = d3
-            .scaleLinear()
-            .domain(d3.extent(this.projectedData, (d) => +d.x))
-            .range([0, this.width - margin.left - margin.right]);
-
-        // Add Y axis
-        const y = d3
-            .scaleLinear()
-            .domain(d3.extent(this.projectedData, (d) => +d.y))
-            .range([this.height, margin.top]);
-
-        this.projectedData.forEach((d) => {
-            d.xCoord = x(d.x);
-            d.yCoord = y(d.y);
-        });
-
-        // Plot x axis
-        this.d3Selection
-            .append("g")
-            .attr("transform", "translate(0," + this.height + ")")
-            .call(d3.axisBottom(x).ticks(5));
-
-        // Plot y axis
-        this.d3Selection.append("g").call(d3.axisLeft(y).ticks(5));
-
-        const dots = this.d3Selection.append("g");
-        dots
-            .selectAll("cicle")
-            .data(this.projectedData)
-            .enter()
-            .append("circle")
-            .attr("cx", (d) => d.xCoord)
-            .attr("cy", (d) => d.yCoord)
-            .attr("r", 4)
-            .style("fill", (d) => this.colors[d.className]);
+        let plotConfig = {
+            width: this.width,
+            height: this.height,
+            margin: margin
+        }
+        ScatterPlotUtils.drawScatterPlot(this.d3Selection, this.projectedData, this.colors, plotConfig);
     }
 
     convertDataset(data) {
