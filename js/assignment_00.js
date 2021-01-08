@@ -55,20 +55,13 @@ sel.addEventListener("change", async (e) => {
     if (!value) return;
     const data = await loadData(value);
     switch (selectedTab) {
+        // Not calling the functions for TSNE and MDS because they have a button
         case "pcp-tab": {
             showDataParallelCoordinates(data);
             break;
         }
         case "scatterplot-tab": {
             showDataScatterPlot(data);
-            break;
-        }
-        case "t-sne-tab": {
-            showDataTSNE(data);
-            break;
-        }
-        case "mds-tab": {
-            showDataMDS(data);
             break;
         }
     }
@@ -118,6 +111,11 @@ const tSneStartButton = document.getElementById("project-t-sne");
 tSneStartButton.addEventListener("click", async () => {
     const data = await loadData(sel.value);
     showDataTSNE(data);
+});
+const mdsStartButton = document.getElementById("project-mds");
+mdsStartButton.addEventListener("click", async () => {
+    const data= await loadData(sel.value);
+    showDataMDS(data);
 })
 
 async function updateSliders() {
