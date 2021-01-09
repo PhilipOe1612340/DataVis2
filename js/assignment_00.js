@@ -61,7 +61,12 @@ sel.addEventListener("change", async (e) => {
             break;
         }
         case "scatterplot-tab": {
+            // TODO check why this is called many times
             showDataScatterPlot(data);
+            break;
+        }
+        case "mds-tab": {
+            showDataMDS(data);
             break;
         }
     }
@@ -112,11 +117,6 @@ tSneStartButton.addEventListener("click", async () => {
     const data = await loadData(sel.value);
     showDataTSNE(data);
 });
-const mdsStartButton = document.getElementById("project-mds");
-mdsStartButton.addEventListener("click", async () => {
-    const data= await loadData(sel.value);
-    showDataMDS(data);
-})
 
 async function updateSliders() {
     const data = await loadData(window.location.hash.substr(1));
