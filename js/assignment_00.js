@@ -61,7 +61,6 @@ sel.addEventListener("change", async (e) => {
             break;
         }
         case "scatterplot-tab": {
-            // TODO check why this is called many times
             showDataScatterPlot(data);
             break;
         }

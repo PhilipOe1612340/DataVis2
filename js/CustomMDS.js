@@ -7,6 +7,7 @@ class CustomMDS extends CustomHTMLElement {
     runComputation() {
         const data = this.transformData(this.data);
         let matrix = druid.Matrix.from(data);
+        // Euclidean is set as the default metric (https://saehm.github.io/DruidJS/MDS.html)
         const mds = new druid.MDS(matrix);
         const output = mds.transform()._data;
         let result = [];
