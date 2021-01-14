@@ -68,6 +68,10 @@ sel.addEventListener("change", async (e) => {
             showDataMDS(data);
             break;
         }
+        case "pixel-tab": {
+            showHilbert(data);
+            break;
+        }
     }
     window.history.replaceState(value, "Dataset: " + value, "#" + value);
 });
@@ -191,6 +195,14 @@ function showDataTSNE(data) {
     clearContainer("t-sne-container");
     tSneModel = new CustomTSNE(perplexity, learningRate, nIter);
     const plot = document.getElementById("t-sne-container").appendChild(tSneModel);
+    plot.setDimensions(data.columns);
+    plot.setDataset(data);
+    return plot.update();
+}
+
+function showHilbert(data){
+    clearContainer("pix-container");
+    const plot = document.getElementById("pix-container").appendChild(new HilbertVis());
     plot.setDimensions(data.columns);
     plot.setDataset(data);
     return plot.update();

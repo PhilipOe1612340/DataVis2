@@ -90,3 +90,15 @@ canvas {
   top: 95px;
   left: 20px;
 }
+
+svg path {
+  fill: none;
+  stroke: #3A5894;
+  stroke-width: 0.3;
+  stroke-linecap: square;
+}
+
+svg path.skeleton {
+  stroke: #EEE;
+  stroke-width: 0.1;
+}
