@@ -5,39 +5,22 @@ class HilbertVis extends CustomHTMLElement {
         super();
     }
 
-
     runComputation() {
-        const range = { start: 0, length: 40 };
-        const order = 3;
-        const layout = new HilbertLayout()
-            .order(order)
-            .layout(range)
+        const order = 6;
+        const range = { start: 0, length: Math.pow(2, order) * 8 };
+        const layout = new HilbertLayout().order(order).getHilbertPath(range);
 
-        const path = layout.pathVertices.reduce((path, dir) => path + dir, 'M0 0L0 0');
-        const mutate = `scale(${100/*layout.cellWidth */}) translate(${layout.startCell[0] + 0.5}, ${layout.startCell[1] + 0.5})`;
+        const path = layout.vertices.reduce((path, dir) => path + dir, 'M0 0L0 0');
+        const mutate = `scale(${20}) translate(${layout.startCell[0] + 0.5}, ${layout.startCell[1] + 0.5})`;
 
-        console.log(path, mutate);
+        // TODO: change from path to pixel display
         this.d3Selection.append('path').attr('d', path).attr('transform', mutate);
-
-        // this.d3Selection.select('path:not(.skeleton)')
-        //     .transition().duration(order * 1000).ease(d3.easePoly)
-        //     .attrTween('stroke-dasharray', tweenDash);
-
-        // function tweenDash() {
-        //     var l = this.getTotalLength(),
-        //         i = d3.interpolateString("0," + l, l + "," + l);
-        //     return function (t) { return i(t); };
-        // }
     }
 
     update() {
         this.rootEl.selectAll("*").remove();
         this.makeContainer();
         this.runComputation();
-    }
-
-    convertDataset(data) {
-        return data.map((elem, i) => new DataNode(i, elem.data[0], elem.data[1], elem.class));
     }
 }
 
@@ -46,33 +29,13 @@ window.customElements.define("pix-plot", HilbertVis);
 
 class HilbertLayout {
     constructor() {
-        this._layout = {};
-        this._canvasWidth = 1;
         this._order = 4;
-        // this._simplifyCurves = true;
     }
 
-    /**
-     * @param {string | number} width
-     */
-    canvasWidth(width) {
-        this._canvasWidth = +width;
-        return this;
-    };
-
-    // Note: Maximum safe order is 26, due to JS numbers upper-boundary of 53 bits
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
     order(order) {
         this._order = +order;
         return this;
     };
-
-    // simplifyCurves(simplify) {
-    //     if (simplify === undefined) return this._simplifyCurves;
-    //     this._simplifyCurves = simplify;
-    //     return this;
-    // };
-
 
     //rotate/flip a quadrant appropriately
     rotate(n, xy, rx, ry) {
@@ -119,50 +82,39 @@ class HilbertLayout {
         return xy;
     }
 
-    getHilbertPath(start, length) {
-        // nSide is on a binary boundary 2^0, 2^1, 2^2, ...
-        const sideSize = 4
-        let nSide = Math.pow(2, this._order),
-            cellWidth = sideSize / nSide;
+    getHilbertPath({ length, start }) {
+        const nSide = Math.pow(2, this._order);
+        const startCell = this.distance2Point(start, nSide);
+        const vertices = [];
 
-        let startCell = this.distance2Point(start, nSide),
-            vertices = [],
-            prevPnt = startCell,
-            pnt;
+        let prevPoint = startCell;
+        let pnt;
 
         for (let i = 1; i < length; i++) {
+            
             pnt = this.distance2Point(start + i, nSide);
 
             vertices.push(
-                pnt[0] > prevPnt[0]
+                pnt[0] > prevPoint[0]
                     ? 'h1' // Right
-                    : (pnt[0] < prevPnt[0]
+                    : (pnt[0] < prevPoint[0]
                         ? 'h-1' // Left
-                        : (pnt[1] > prevPnt[1]
+                        : (pnt[1] > prevPoint[1]
                             ? 'v1' // Down
                             : 'v-1' // Up
                         )
                     )
             );
 
-            prevPnt = pnt;
+            prevPoint = pnt;
         }
 
-        return {
-            cellWidth: cellWidth,
-            startCell: startCell,
-            pathVertices: vertices
-        };
-    }
-
-    layout(range) {
-        const path = this.getHilbertPath(range.start, range.length);
-        return { ...range, ...path };
+        return { start, length, startCell, vertices }
     }
 
     getValAtXY(x, y) {
         const n = Math.pow(2, this._order);
-        const xy = [x, y].map((coord) => Math.floor(coord * n / this._canvasWidth));
+        const xy = [x, y].map((coord) => coord * n);
         return this.point2Distance(xy[0], xy[1], n);
     }
 
