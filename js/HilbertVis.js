@@ -1,14 +1,14 @@
 // @ts-check
-const Directions = Object.freeze({ RIGHT: 1, LEFT: 2, UP: 3, DOWN: 4 });
+const Directions = Object.freeze({RIGHT: 1, LEFT: 2, UP: 3, DOWN: 4});
 
 class HilbertVis extends CustomHTMLElement {
     constructor(size, dimName) {
         super();
         const margin = {
-            left: 35,
+            left: 0,
             right: 0,
-            top: 30,
-            bottom: 30,
+            top: 0,
+            bottom: 0,
         };
         this.dimName = dimName;
         this.style.margin = `${margin.top}px ${margin.right}px ${margin.bottom}px ${margin.left}px`;
@@ -20,7 +20,7 @@ class HilbertVis extends CustomHTMLElement {
         const order = 5;
         const layout = new HilbertLayout().order(order).getHilbertPath(this.data.length + 1);
 
-        this.d3Selection.append('text').style('transform', 'translateY(5px)').text(this.dimName);
+        this.d3Selection.append('text').style('transform', 'translateY(5px)').style().text(this.dimName);
 
         // For the pixels
         const sequentialScale = d3.scaleSequential()
@@ -36,16 +36,38 @@ class HilbertVis extends CustomHTMLElement {
             .domain([0, largerRange])
             .range([10, smallerDim]);
 
+        // Add tooltip
+        const tooltip = d3
+            .select("body")
+            .append("div")
+            .attr("class", "plot-tooltip")
+            .on("mouseover", (d, i) => {
+                tooltip.transition().duration(0);
+            })
+            .on("mouseout", (d, i) => {
+                tooltip.style("display", "none");
+            });
+
+        let dataToShow = this.data.map((d, i) => new PixDataNode(layout.coordinates[i].x, layout.coordinates[i].y, d));
+
         this.d3Selection
             .selectAll("rect")
-            .data(layout.coordinates)
+            .data(dataToShow)
             .enter()
             .append("rect")
             .attr("y", (d) => scale(d.x))
             .attr("x", (d) => scale(d.y))
             .attr("width", cellWidth)
             .attr("height", cellWidth)
-            .style("fill", (_, i) => sequentialScale(this.data[i])); // `hsl(200, ${colorSat(this.data[i])}%, ${colorLight(this.data[i])}%)`
+            .style("fill", (_, i) => sequentialScale(this.data[i])) // `hsl(200, ${colorSat(this.data[i])}%, ${colorLight(this.data[i])}%)`
+            .on("mouseover", (event, d, i) => {
+                tooltip.html(d.value);
+                tooltip.transition().duration(0);
+                tooltip.style("top", event.pageY - 27 + "px");
+                tooltip.style("left", event.pageX + 15 + "px");
+                tooltip.style("border", "2px solid " + sequentialScale(d.value));
+                tooltip.style("display", "block");
+            });
     }
 
     update() {
@@ -98,25 +120,33 @@ class HilbertLayout {
         const coords = [];
         for (const vertex of vertices) {
             switch (vertex) {
-                case Directions.UP: y += 1; break;
-                case Directions.DOWN: y -= 1; break;
-                case Directions.RIGHT: x += 1; break;
-                case Directions.LEFT: x -= 1; break;
+                case Directions.UP:
+                    y += 1;
+                    break;
+                case Directions.DOWN:
+                    y -= 1;
+                    break;
+                case Directions.RIGHT:
+                    x += 1;
+                    break;
+                case Directions.LEFT:
+                    x -= 1;
+                    break;
             }
             maxX = Math.max(maxX, x);
             maxY = Math.max(maxY, y);
             minX = Math.min(minX, x);
             minY = Math.min(minY, y);
-            if (coords.some(c => c === { x, y })) {
+            if (coords.some(c => c === {x, y})) {
                 throw "something is wrong"
             }
-            coords.push({ x, y })
+            coords.push({x, y})
         }
         coords.forEach(c => {
             c.x -= minX;
             c.y -= minY;
         });
-        return { coordinates: coords, maxX: maxX + minX, maxY: maxY + minY }
+        return {coordinates: coords, maxX: maxX + minX, maxY: maxY + minY}
     }
 
     // d: distance, n: sqrt of num cells (square side size)
@@ -153,8 +183,8 @@ class HilbertLayout {
                     : (pnt[0] < prevPoint[0]
                         ? Directions.LEFT
                         : (pnt[1] > prevPoint[1]
-                            ? Directions.DOWN
-                            : Directions.UP
+                                ? Directions.DOWN
+                                : Directions.UP
                         )
                     )
             );
@@ -173,5 +203,13 @@ class HilbertLayout {
 
     getXyAtVal(val) {
         return this.distanceToPoint(val, Math.pow(2, this._order));
+    }
+}
+
+class PixDataNode {
+    constructor(x, y, value) {
+        this.x = x;
+        this.y = y;
+        this.value = value;
     }
 }
