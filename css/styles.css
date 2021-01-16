@@ -42,7 +42,7 @@ td:nth-child(2n) {
   text-align: right;
 }
 
-#scatterplot-container {
+#scatterplot-container, #pix-container {
   display: grid;
   grid-template-columns: var(--grid);
   grid-template-rows: var(--grid);

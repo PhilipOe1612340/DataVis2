@@ -1,8 +1,21 @@
 // @ts-check
 
 class HilbertVis extends CustomHTMLElement {
-    constructor() {
+    constructor(size, dimName) {
         super();
+        const margin = {
+            left: 35,
+            right: 0,
+            top: 10,
+            bottom: 30,
+        };
+        this.dimName = dimName;
+        this.style.margin = `${margin.top}px ${margin.right}px ${margin.bottom}px ${margin.left}px`;
+        // this.style.width = "100%";
+        this.d3Selection = undefined;
+
+        this.height = window.innerHeight / size - margin.top - margin.bottom;
+        this.width = window.innerWidth / size - margin.right - margin.left;
     }
 
     runComputation() {
@@ -12,6 +25,13 @@ class HilbertVis extends CustomHTMLElement {
 
         const path = layout.vertices.reduce((path, dir) => path + dir, 'M0 0L0 0');
         const mutate = `scale(${20}) translate(${layout.startCell[0] + 0.5}, ${layout.startCell[1] + 0.5})`;
+
+        this.d3Selection.append('text').text(this.dimName);
+
+        // For the pixels
+        const sequentialScale = d3.scaleSequential()
+            .domain(d3.extent(this.data))
+            .interpolator(d3.interpolateCool)
 
         // TODO: change from path to pixel display
         this.d3Selection.append('path').attr('d', path).attr('transform', mutate);

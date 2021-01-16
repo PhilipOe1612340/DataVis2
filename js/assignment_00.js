@@ -202,10 +202,17 @@ function showDataTSNE(data) {
 
 function showHilbert(data){
     clearContainer("pix-container");
-    const plot = document.getElementById("pix-container").appendChild(new HilbertVis());
-    plot.setDimensions(data.columns);
-    plot.setDataset(data);
-    return plot.update();
+
+    const axes = data.columns;
+    const hasClass = axes.includes("class");
+    const classDimension = axes.find((dim, i) => hasClass ? dim === 'class' : i === axes.length - 1);
+    data.columns = data.columns.filter(d => d !== classDimension);
+    document.documentElement.style.setProperty('--grid', '1fr '.repeat(data.columns.length));
+
+    data.columns.forEach(dim => {
+        let dataset = data.map(e => parseFloat(e[dim])); // Get data for current dimension
+        addNewHilbert(dataset, data.columns, axes.length, dim);
+    });
 }
 
 function showDataMDS(data){
@@ -228,6 +235,14 @@ function addNewPlot(dataset, dimensions, size) {
     plot.setDataset(dataset);
     plot.setDimensions(dimensions);
     return plot.update(mstCheckbox.checked);
+}
+
+// TODO merge this and previous function into one
+function addNewHilbert(dataset, dimensions, size, currentDim) {
+    const plot = document.getElementById("pix-container").appendChild(new HilbertVis(size, currentDim));
+    plot.setDataset(dataset);
+    plot.setDimensions(dimensions);
+    return plot.update();
 }
 
 /**
