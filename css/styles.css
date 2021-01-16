@@ -42,7 +42,8 @@ td:nth-child(2n) {
   text-align: right;
 }
 
-#scatterplot-container, #pix-container {
+#scatterplot-container,
+#pix-container {
   display: grid;
   grid-template-columns: var(--grid);
   grid-template-rows: var(--grid);
@@ -93,12 +94,16 @@ canvas {
 
 svg path {
   fill: none;
-  stroke: #3A5894;
+  stroke: #3a5894;
   stroke-width: 0.3;
   stroke-linecap: square;
 }
 
 svg path.skeleton {
-  stroke: #EEE;
+  stroke: #eee;
   stroke-width: 0.1;
+}
+#pix-container {
+  display: flex;
+  flex-wrap: wrap;
 }

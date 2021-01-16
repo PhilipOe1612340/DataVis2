@@ -102,18 +102,18 @@ sliderBeta.addEventListener('input', () => {
 // T-SNE controls
 const tSneIterSlider = document.getElementById("iterations-slider");
 tSneIterSlider.addEventListener("input", () => {
-  nIter = tSneIterSlider.value;
-  document.getElementById("iterations-label").innerHTML = "Iterations = "+ nIter;
+    nIter = tSneIterSlider.value;
+    document.getElementById("iterations-label").innerHTML = "Iterations = " + nIter;
 });
 const tSnePerplexitySlider = document.getElementById("perplexity-slider");
 tSnePerplexitySlider.addEventListener("input", () => {
-  perplexity = tSnePerplexitySlider.value;
-  document.getElementById("perplexity-label").innerHTML = "Perplexity = "+ perplexity;
+    perplexity = tSnePerplexitySlider.value;
+    document.getElementById("perplexity-label").innerHTML = "Perplexity = " + perplexity;
 })
 const tSneLearningRateSlider = document.getElementById("epsilon-slider");
 tSneLearningRateSlider.addEventListener("input", () => {
-  learningRate = tSneLearningRateSlider.value;
-  document.getElementById("epsilon-label").innerHTML = "&epsilon; = "+ learningRate;
+    learningRate = tSneLearningRateSlider.value;
+    document.getElementById("epsilon-label").innerHTML = "&epsilon; = " + learningRate;
 });
 const tSneStartButton = document.getElementById("project-t-sne");
 tSneStartButton.addEventListener("click", async () => {
@@ -200,7 +200,7 @@ function showDataTSNE(data) {
     return plot.update();
 }
 
-function showHilbert(data){
+function showHilbert(data) {
     clearContainer("pix-container");
 
     const axes = data.columns;
@@ -215,7 +215,7 @@ function showHilbert(data){
     });
 }
 
-function showDataMDS(data){
+function showDataMDS(data) {
     clearContainer("mds-container");
     const plot = document.getElementById("mds-container").appendChild(new CustomMDS());
     plot.setDimensions(data.columns);
@@ -239,7 +239,7 @@ function addNewPlot(dataset, dimensions, size) {
 
 // TODO merge this and previous function into one
 function addNewHilbert(dataset, dimensions, size, currentDim) {
-    const plot = document.getElementById("pix-container").appendChild(new HilbertVis(size, currentDim));
+    const plot = document.getElementById("pix-container").appendChild(new HilbertVis(Math.min(6, size), currentDim));
     plot.setDataset(dataset);
     plot.setDimensions(dimensions);
     return plot.update();

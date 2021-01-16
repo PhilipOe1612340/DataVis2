@@ -12,9 +12,6 @@ class HilbertVis extends CustomHTMLElement {
         };
         this.dimName = dimName;
         this.style.margin = `${margin.top}px ${margin.right}px ${margin.bottom}px ${margin.left}px`;
-        // this.style.width = "100%";
-        this.d3Selection = undefined;
-
         this.height = window.innerHeight / size - margin.top - margin.bottom;
         this.width = window.innerWidth / size - margin.right - margin.left;
     }
@@ -31,12 +28,13 @@ class HilbertVis extends CustomHTMLElement {
             .interpolator(d3.interpolateCool)
 
         const largerRange = Math.max(layout.maxX, layout.maxY);
-        const cellWidth = this.width / largerRange;
+        const smallerDim = Math.min(this.width, this.height)
+        const cellWidth = smallerDim / largerRange;
 
         const scale = d3
             .scaleLinear()
             .domain([0, largerRange])
-            .range([10, this.width]);
+            .range([10, smallerDim]);
 
         this.d3Selection
             .selectAll("rect")
@@ -44,7 +42,7 @@ class HilbertVis extends CustomHTMLElement {
             .enter()
             .append("rect")
             .attr("y", (d) => scale(d.x))
-            .attr("x", (d) => this.width - scale(d.y))
+            .attr("x", (d) => scale(d.y))
             .attr("width", cellWidth)
             .attr("height", cellWidth)
             .style("fill", (_, i) => sequentialScale(this.data[i])); // `hsl(200, ${colorSat(this.data[i])}%, ${colorLight(this.data[i])}%)`
