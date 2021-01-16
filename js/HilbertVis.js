@@ -1,4 +1,5 @@
 // @ts-check
+const Directions = Object.freeze({ RIGHT: 1, LEFT: 2, UP: 3, DOWN: 4 });
 
 class HilbertVis extends CustomHTMLElement {
     constructor(size, dimName) {
@@ -6,7 +7,7 @@ class HilbertVis extends CustomHTMLElement {
         const margin = {
             left: 35,
             right: 0,
-            top: 10,
+            top: 30,
             bottom: 30,
         };
         this.dimName = dimName;
@@ -19,22 +20,34 @@ class HilbertVis extends CustomHTMLElement {
     }
 
     runComputation() {
-        const order = 6;
-        const range = { start: 0, length: Math.pow(2, order) * 8 };
-        const layout = new HilbertLayout().order(order).getHilbertPath(range);
+        const order = 5;
+        const layout = new HilbertLayout().order(order).getHilbertPath(this.data.length + 1);
 
-        const path = layout.vertices.reduce((path, dir) => path + dir, 'M0 0L0 0');
-        const mutate = `scale(${20}) translate(${layout.startCell[0] + 0.5}, ${layout.startCell[1] + 0.5})`;
-
-        this.d3Selection.append('text').text(this.dimName);
+        this.d3Selection.append('text').style('transform', 'translateY(5px)').text(this.dimName);
 
         // For the pixels
         const sequentialScale = d3.scaleSequential()
             .domain(d3.extent(this.data))
             .interpolator(d3.interpolateCool)
 
-        // TODO: change from path to pixel display
-        this.d3Selection.append('path').attr('d', path).attr('transform', mutate);
+        const largerRange = Math.max(layout.maxX, layout.maxY);
+        const cellWidth = this.width / largerRange;
+
+        const scale = d3
+            .scaleLinear()
+            .domain([0, largerRange])
+            .range([10, this.width]);
+
+        this.d3Selection
+            .selectAll("rect")
+            .data(layout.coordinates)
+            .enter()
+            .append("rect")
+            .attr("y", (d) => scale(d.x))
+            .attr("x", (d) => this.width - scale(d.y))
+            .attr("width", cellWidth)
+            .attr("height", cellWidth)
+            .style("fill", (_, i) => sequentialScale(this.data[i])); // `hsl(200, ${colorSat(this.data[i])}%, ${colorLight(this.data[i])}%)`
     }
 
     update() {
@@ -45,7 +58,6 @@ class HilbertVis extends CustomHTMLElement {
 }
 
 window.customElements.define("pix-plot", HilbertVis);
-
 
 class HilbertLayout {
     constructor() {
@@ -70,9 +82,7 @@ class HilbertLayout {
         }
     }
 
-    // Note: this function will start breaking down for n > 2^26 (MAX_SAFE_INTEGER = 2^53)
-    // x,y: cell coordinates, n: sqrt of num cells (square side size)
-    point2Distance(x, y, n) {
+    pointToDistance(x, y, n) {
         let rx, ry, d = 0,
             xy = [x, y];
 
@@ -85,8 +95,34 @@ class HilbertLayout {
         return d;
     }
 
+    convertToAbsoluteCoordinates(vertices) {
+        let x = 0, y = 0, maxX = 0, maxY = 0, minX = 0, minY = 0;
+        const coords = [];
+        for (const vertex of vertices) {
+            switch (vertex) {
+                case Directions.UP: y += 1; break;
+                case Directions.DOWN: y -= 1; break;
+                case Directions.RIGHT: x += 1; break;
+                case Directions.LEFT: x -= 1; break;
+            }
+            maxX = Math.max(maxX, x);
+            maxY = Math.max(maxY, y);
+            minX = Math.min(minX, x);
+            minY = Math.min(minY, y);
+            if (coords.some(c => c === { x, y })) {
+                throw "something is wrong"
+            }
+            coords.push({ x, y })
+        }
+        coords.forEach(c => {
+            c.x -= minX;
+            c.y -= minY;
+        });
+        return { coordinates: coords, maxX: maxX + minX, maxY: maxY + minY }
+    }
+
     // d: distance, n: sqrt of num cells (square side size)
-    distance2Point(d, n) {
+    distanceToPoint(d, n) {
         let rx, ry, t = d,
             xy = [0, 0];
 
@@ -102,26 +138,25 @@ class HilbertLayout {
         return xy;
     }
 
-    getHilbertPath({ length, start }) {
+    getHilbertPath(length) {
         const nSide = Math.pow(2, this._order);
-        const startCell = this.distance2Point(start, nSide);
         const vertices = [];
 
-        let prevPoint = startCell;
+        let prevPoint = this.distanceToPoint(0, nSide);
         let pnt;
 
         for (let i = 1; i < length; i++) {
-            
-            pnt = this.distance2Point(start + i, nSide);
+
+            pnt = this.distanceToPoint(i, nSide);
 
             vertices.push(
                 pnt[0] > prevPoint[0]
-                    ? 'h1' // Right
+                    ? Directions.RIGHT
                     : (pnt[0] < prevPoint[0]
-                        ? 'h-1' // Left
+                        ? Directions.LEFT
                         : (pnt[1] > prevPoint[1]
-                            ? 'v1' // Down
-                            : 'v-1' // Up
+                            ? Directions.DOWN
+                            : Directions.UP
                         )
                     )
             );
@@ -129,16 +164,16 @@ class HilbertLayout {
             prevPoint = pnt;
         }
 
-        return { start, length, startCell, vertices }
+        return this.convertToAbsoluteCoordinates(vertices)
     }
 
     getValAtXY(x, y) {
         const n = Math.pow(2, this._order);
         const xy = [x, y].map((coord) => coord * n);
-        return this.point2Distance(xy[0], xy[1], n);
+        return this.pointToDistance(xy[0], xy[1], n);
     }
 
     getXyAtVal(val) {
-        return this.distance2Point(val, Math.pow(2, this._order));
+        return this.distanceToPoint(val, Math.pow(2, this._order));
     }
 }
