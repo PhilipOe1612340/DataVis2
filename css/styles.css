@@ -108,6 +108,11 @@ svg path.skeleton {
   flex-wrap: wrap;
 }
 
+.subplot-container {
+  display: flex;
+  justify-content: center;
+}
+
 .subplot-container div {
   position: absolute;
 }
@@ -116,4 +121,5 @@ svg path.skeleton {
   position: absolute;
   cursor: pointer;
   font-weight: bold;
+  text-align: center;
 }

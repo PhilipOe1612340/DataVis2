@@ -6,6 +6,8 @@ var d3 = globalThis.d3;
 
 let selectedTab = 'pcp-tab';
 
+let loadedData;
+
 const colorArray = ['#FF6633', '#00B3E6', '#003050', '#4D80CC', '#9900B3', '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF'];
 const datasets = ["artificial_labeled.csv", "education_labeled.csv", "iris_labeled.csv", "mtcars_labeled.csv", "wine_labeled.csv"];
 let outlyingMeasures = [];
@@ -54,6 +56,7 @@ sel.addEventListener("change", async (e) => {
     const value = e.target.value;
     if (!value) return;
     const data = await loadData(value);
+    loadedData = data;
     switch (selectedTab) {
         // Not calling the functions for TSNE and MDS because they have a button
         case "pcp-tab": {
@@ -245,7 +248,9 @@ function addNewHilbert(dataset, dimensions, size, currentDim) {
 
     let dimText = document.createElement("span");
     dimText.textContent = currentDim;
-    dimText.addEventListener("click", sortDataByDimension);
+    dimText.addEventListener("click", (e) => {
+        sortDataByDimension(e.toElement.outerText);
+    });
     subplotContainer.appendChild(dimText);
 
     const plot = subplotContainer.appendChild(new HilbertVis(Math.min(6, size)));
@@ -255,8 +260,14 @@ function addNewHilbert(dataset, dimensions, size, currentDim) {
     return plot.update();
 }
 
-function sortDataByDimension() {
-    console.log("sorting dims")
+function sortDataByDimension(dim) {
+    console.log("Sorting dims by " + dim);
+    loadedData.sort((a, b) => {
+        if (a[dim] < b[dim]) return -1;
+        if (a[dim] > b[dim]) return 1;
+        return 0;
+    });
+    showHilbert(loadedData);
 }
 
 /**
