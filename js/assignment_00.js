@@ -207,9 +207,7 @@ function showHilbert(data) {
     clearContainer("pix-container");
 
     const axes = data.columns;
-    const hasClass = axes.includes("class");
-    const classDimension = axes.find((dim, i) => hasClass ? dim === 'class' : i === axes.length - 1);
-    data.columns = data.columns.filter(d => d !== classDimension);
+    data.columns = data.columns.filter(d => d !== "class");
     document.documentElement.style.setProperty('--grid', '1fr '.repeat(data.columns.length));
 
     data.columns.forEach(dim => {
@@ -262,12 +260,7 @@ function addNewHilbert(dataset, dimensions, size, currentDim) {
 
 function sortDataByDimension(dim) {
     console.log("Sorting dims by " + dim);
-    loadedData.sort((a, b) => {
-        if (a[dim] < b[dim]) return -1;
-        if (a[dim] > b[dim]) return 1;
-        return 0;
-    });
-    showHilbert(loadedData);
+    showHilbert(loadedData.sort((a, b) => a[dim] - b[dim]));
 }
 
 /**
