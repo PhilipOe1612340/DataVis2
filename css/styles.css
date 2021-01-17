@@ -107,3 +107,13 @@ svg path.skeleton {
   display: flex;
   flex-wrap: wrap;
 }
+
+.subplot-container div {
+  position: absolute;
+}
+
+.subplot-container span {
+  position: absolute;
+  cursor: pointer;
+  font-weight: bold;
+}

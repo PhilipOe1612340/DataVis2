@@ -2,7 +2,7 @@
 const Directions = Object.freeze({RIGHT: 1, LEFT: 2, UP: 3, DOWN: 4});
 
 class HilbertVis extends CustomHTMLElement {
-    constructor(size, dimName) {
+    constructor(size) {
         super();
         const margin = {
             left: 0,
@@ -10,7 +10,6 @@ class HilbertVis extends CustomHTMLElement {
             top: 0,
             bottom: 0,
         };
-        this.dimName = dimName;
         this.style.margin = `${margin.top}px ${margin.right}px ${margin.bottom}px ${margin.left}px`;
         this.height = window.innerHeight / size - margin.top - margin.bottom;
         this.width = window.innerWidth / size - margin.right - margin.left;
@@ -19,8 +18,6 @@ class HilbertVis extends CustomHTMLElement {
     runComputation() {
         const order = 5;
         const layout = new HilbertLayout().order(order).getHilbertPath(this.data.length + 1);
-
-        this.d3Selection.append('text').style('transform', 'translateY(5px)').style().text(this.dimName);
 
         // For the pixels
         const sequentialScale = d3.scaleSequential()

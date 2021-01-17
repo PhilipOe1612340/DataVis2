@@ -239,10 +239,24 @@ function addNewPlot(dataset, dimensions, size) {
 
 // TODO merge this and previous function into one
 function addNewHilbert(dataset, dimensions, size, currentDim) {
-    const plot = document.getElementById("pix-container").appendChild(new HilbertVis(Math.min(6, size), currentDim));
+    // Contains the dimension name and the plot
+    let subplotContainer = document.createElement("div");
+    subplotContainer.setAttribute("class", "subplot-container");
+
+    let dimText = document.createElement("span");
+    dimText.textContent = currentDim;
+    dimText.addEventListener("click", sortDataByDimension);
+    subplotContainer.appendChild(dimText);
+
+    const plot = subplotContainer.appendChild(new HilbertVis(Math.min(6, size)));
     plot.setDataset(dataset);
     plot.setDimensions(dimensions);
+    document.getElementById("pix-container").appendChild(subplotContainer);
     return plot.update();
+}
+
+function sortDataByDimension() {
+    console.log("sorting dims")
 }
 
 /**
