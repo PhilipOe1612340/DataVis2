@@ -58,12 +58,15 @@ class HilbertVis extends CustomHTMLElement {
             .attr("height", cellWidth)
             .style("fill", (_, i) => sequentialScale(this.data[i])) // `hsl(200, ${colorSat(this.data[i])}%, ${colorLight(this.data[i])}%)`
             .on("mouseover", (event, d, i) => {
-                tooltip.html(d.value);
+                tooltip.html(d.value.toFixed(2));
                 tooltip.transition().duration(0);
                 tooltip.style("top", event.pageY - 27 + "px");
                 tooltip.style("left", event.pageX + 15 + "px");
                 tooltip.style("border", "2px solid " + sequentialScale(d.value));
                 tooltip.style("display", "block");
+            })
+            .on("mouseout", (event, d) => {
+                tooltip.style("display", "none");
             });
     }
 
