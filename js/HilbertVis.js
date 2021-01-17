@@ -164,15 +164,16 @@ class HilbertLayout {
     }
 
     getHilbertPath(length) {
+        const start = -1;
         const nSide = Math.pow(2, this._order);
         const vertices = [];
 
-        let prevPoint = this.distanceToPoint(0, nSide);
+        let prevPoint = this.distanceToPoint(start, nSide);
         let pnt;
 
         for (let i = 1; i < length; i++) {
 
-            pnt = this.distanceToPoint(i, nSide);
+            pnt = this.distanceToPoint(start + i, nSide);
 
             vertices.push(
                 pnt[0] > prevPoint[0]
