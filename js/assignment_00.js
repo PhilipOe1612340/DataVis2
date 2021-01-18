@@ -208,7 +208,6 @@ function showHilbert(data) {
 
     const axes = data.columns;
     data.columns = data.columns.filter(d => d !== "class");
-    document.documentElement.style.setProperty('--grid', '1fr '.repeat(data.columns.length));
 
     data.columns.forEach(dim => {
         let dataset = data.map(e => parseFloat(e[dim])); // Get data for current dimension

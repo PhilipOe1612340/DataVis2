@@ -1,5 +1,5 @@
 // @ts-check
-const Directions = Object.freeze({RIGHT: 1, LEFT: 2, UP: 3, DOWN: 4});
+const Directions = Object.freeze({ RIGHT: 1, LEFT: 2, UP: 3, DOWN: 4 });
 
 class HilbertVis extends CustomHTMLElement {
     constructor(size) {
@@ -11,8 +11,8 @@ class HilbertVis extends CustomHTMLElement {
             bottom: 0,
         };
         this.style.margin = `${margin.top}px ${margin.right}px ${margin.bottom}px ${margin.left}px`;
-        this.height = window.innerHeight / size - margin.top - margin.bottom;
         this.width = window.innerWidth / size - margin.right - margin.left;
+        this.height = this.width;
     }
 
     runComputation() {
@@ -24,7 +24,17 @@ class HilbertVis extends CustomHTMLElement {
             .domain(d3.extent(this.data))
             .interpolator(d3.interpolateCool)
 
-        const largerRange = Math.max(layout.maxX, layout.maxY);
+        const minY = Math.min(...layout.coordinates.map(l => l.y));
+        const minX = Math.min(...layout.coordinates.map(l => l.x));
+        layout.coordinates.forEach(l => {
+            l.x -= minX;
+            l.y -= minY;
+        })
+
+        const maxY = Math.max(...layout.coordinates.map(l => l.y));
+        const maxX = Math.max(...layout.coordinates.map(l => l.x));
+
+        const largerRange = Math.max(maxX, maxY) + 1;
         const smallerDim = Math.min(this.width, this.height)
         const cellWidth = smallerDim / largerRange;
 
@@ -38,10 +48,10 @@ class HilbertVis extends CustomHTMLElement {
             .select("body")
             .append("div")
             .attr("class", "plot-tooltip")
-            .on("mouseover", (d, i) => {
+            .on("mouseover", () => {
                 tooltip.transition().duration(0);
             })
-            .on("mouseout", (d, i) => {
+            .on("mouseout", () => {
                 tooltip.style("display", "none");
             });
 
@@ -89,7 +99,6 @@ class HilbertLayout {
         return this;
     };
 
-    //rotate/flip a quadrant appropriately
     rotate(n, xy, rx, ry) {
         if (ry == 0) {
             if (rx == 1) {
@@ -97,7 +106,6 @@ class HilbertLayout {
                 xy[1] = (n - 1 - xy[1]);
             }
 
-            //Swap x and y
             xy.push(xy.shift());
         }
     }
@@ -133,23 +141,18 @@ class HilbertLayout {
                     x -= 1;
                     break;
             }
-            maxX = Math.max(maxX, x);
-            maxY = Math.max(maxY, y);
-            minX = Math.min(minX, x);
-            minY = Math.min(minY, y);
-            if (coords.some(c => c === {x, y})) {
+            if (coords.some(c => c === { x, y })) {
                 throw "something is wrong"
             }
-            coords.push({x, y})
+            coords.push({ x, y })
         }
         coords.forEach(c => {
-            c.x -= minX;
-            c.y -= minY;
+            c.x += minX * -1;
+            c.y += minY * -1;
         });
-        return {coordinates: coords, maxX: maxX + minX, maxY: maxY + minY}
+        return { coordinates: coords }
     }
 
-    // d: distance, n: sqrt of num cells (square side size)
     distanceToPoint(d, n) {
         let rx, ry, t = d,
             xy = [0, 0];
@@ -184,8 +187,8 @@ class HilbertLayout {
                     : (pnt[0] < prevPoint[0]
                         ? Directions.LEFT
                         : (pnt[1] > prevPoint[1]
-                                ? Directions.DOWN
-                                : Directions.UP
+                            ? Directions.DOWN
+                            : Directions.UP
                         )
                     )
             );
