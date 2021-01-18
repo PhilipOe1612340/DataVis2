@@ -6,6 +6,8 @@ var d3 = globalThis.d3;
 
 let selectedTab = 'pcp-tab';
 
+let loadedData;
+
 const colorArray = ['#FF6633', '#00B3E6', '#003050', '#4D80CC', '#9900B3', '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF'];
 const datasets = ["artificial_labeled.csv", "education_labeled.csv", "iris_labeled.csv", "mtcars_labeled.csv", "wine_labeled.csv"];
 let outlyingMeasures = [];
@@ -54,6 +56,7 @@ sel.addEventListener("change", async (e) => {
     const value = e.target.value;
     if (!value) return;
     const data = await loadData(value);
+    loadedData = data;
     switch (selectedTab) {
         // Not calling the functions for TSNE and MDS because they have a button
         case "pcp-tab": {
@@ -66,6 +69,10 @@ sel.addEventListener("change", async (e) => {
         }
         case "mds-tab": {
             showDataMDS(data);
+            break;
+        }
+        case "pixel-tab": {
+            showHilbert(data);
             break;
         }
     }
@@ -98,18 +105,18 @@ sliderBeta.addEventListener('input', () => {
 // T-SNE controls
 const tSneIterSlider = document.getElementById("iterations-slider");
 tSneIterSlider.addEventListener("input", () => {
-  nIter = tSneIterSlider.value;
-  document.getElementById("iterations-label").innerHTML = "Iterations = "+ nIter;
+    nIter = tSneIterSlider.value;
+    document.getElementById("iterations-label").innerHTML = "Iterations = " + nIter;
 });
 const tSnePerplexitySlider = document.getElementById("perplexity-slider");
 tSnePerplexitySlider.addEventListener("input", () => {
-  perplexity = tSnePerplexitySlider.value;
-  document.getElementById("perplexity-label").innerHTML = "Perplexity = "+ perplexity;
+    perplexity = tSnePerplexitySlider.value;
+    document.getElementById("perplexity-label").innerHTML = "Perplexity = " + perplexity;
 })
 const tSneLearningRateSlider = document.getElementById("epsilon-slider");
 tSneLearningRateSlider.addEventListener("input", () => {
-  learningRate = tSneLearningRateSlider.value;
-  document.getElementById("epsilon-label").innerHTML = "&epsilon; = "+ learningRate;
+    learningRate = tSneLearningRateSlider.value;
+    document.getElementById("epsilon-label").innerHTML = "&epsilon; = " + learningRate;
 });
 const tSneStartButton = document.getElementById("project-t-sne");
 tSneStartButton.addEventListener("click", async () => {
@@ -196,7 +203,20 @@ function showDataTSNE(data) {
     return plot.update();
 }
 
-function showDataMDS(data){
+function showHilbert(data) {
+    clearContainer("pix-container");
+
+    const axes = data.columns;
+    data.columns = data.columns.filter(d => d !== "class");
+    document.documentElement.style.setProperty('--grid', '1fr '.repeat(data.columns.length));
+
+    data.columns.forEach(dim => {
+        let dataset = data.map(e => parseFloat(e[dim])); // Get data for current dimension
+        addNewHilbert(dataset, data.columns, axes.length, dim);
+    });
+}
+
+function showDataMDS(data) {
     clearContainer("mds-container");
     const plot = document.getElementById("mds-container").appendChild(new CustomMDS());
     plot.setDimensions(data.columns);
@@ -216,6 +236,31 @@ function addNewPlot(dataset, dimensions, size) {
     plot.setDataset(dataset);
     plot.setDimensions(dimensions);
     return plot.update(mstCheckbox.checked);
+}
+
+// TODO merge this and previous function into one
+function addNewHilbert(dataset, dimensions, size, currentDim) {
+    // Contains the dimension name and the plot
+    let subplotContainer = document.createElement("div");
+    subplotContainer.setAttribute("class", "subplot-container");
+
+    let dimText = document.createElement("span");
+    dimText.textContent = currentDim;
+    dimText.addEventListener("click", (e) => {
+        sortDataByDimension(e.toElement.outerText);
+    });
+    subplotContainer.appendChild(dimText);
+
+    const plot = subplotContainer.appendChild(new HilbertVis(Math.min(6, size)));
+    plot.setDataset(dataset);
+    plot.setDimensions(dimensions);
+    document.getElementById("pix-container").appendChild(subplotContainer);
+    return plot.update();
+}
+
+function sortDataByDimension(dim) {
+    console.log("Sorting dims by " + dim);
+    showHilbert(loadedData.sort((a, b) => a[dim] - b[dim]));
 }
 
 /**

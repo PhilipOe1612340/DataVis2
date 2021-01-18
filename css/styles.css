@@ -42,7 +42,8 @@ td:nth-child(2n) {
   text-align: right;
 }
 
-#scatterplot-container {
+#scatterplot-container,
+#pix-container {
   display: grid;
   grid-template-columns: var(--grid);
   grid-template-rows: var(--grid);
@@ -89,4 +90,36 @@ canvas {
   position: absolute;
   top: 95px;
   left: 20px;
+}
+
+svg path {
+  fill: none;
+  stroke: #3a5894;
+  stroke-width: 0.3;
+  stroke-linecap: square;
+}
+
+svg path.skeleton {
+  stroke: #eee;
+  stroke-width: 0.1;
+}
+#pix-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.subplot-container {
+  display: flex;
+  justify-content: center;
+}
+
+.subplot-container div {
+  position: absolute;
+}
+
+.subplot-container span {
+  position: absolute;
+  cursor: pointer;
+  font-weight: bold;
+  text-align: center;
 }

@@ -7,6 +7,7 @@ class CustomHTMLElement extends HTMLElement {
             top: 30,
             bottom: 30,
         };
+        this.margin = margin;
         this.data = [];
         this.dimensionNames = null;
         this.rootEl = d3.select(this).append("svg");
