@@ -60,7 +60,8 @@ function assignSpace(hierarchy, rootWidth, rootHeight, rootX, rootY, rotate, ind
     return hierarchy.children
         .map(c => [c, getChildValue(c)])    // include values
         .sort((a, b) => a[1] - b[1])        // sort
-        .map(([c, val], i, t) => {                // assign space based on ratio
+        // @ts-ignore
+        .flatMap(([c, val], i, t) => {      // assign space based on ratio
             // calculate the ratio of the parent element
             const ratio = val / rootValue;
             if (rotate) {
@@ -72,7 +73,7 @@ function assignSpace(hierarchy, rootWidth, rootHeight, rootX, rootY, rotate, ind
                 other += width;
                 return assignSpace(c, width, rootHeight, rootX + other - width, rootY, !rotate, i / t.length);
             }
-        }).flat();
+        })
 }
 
 /**
