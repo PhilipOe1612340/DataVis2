@@ -5,7 +5,7 @@
 var d3 = globalThis.d3;
 
 async function onLoad() {
-    const flare = await d3.json('./flare.json');
+    const flare = await d3.json('./datasets/flare.json');
     const el = document.getElementById('treemap');
     const root = d3.hierarchy(flare);
     treeView(el, root);
