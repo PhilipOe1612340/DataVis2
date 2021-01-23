@@ -4,29 +4,23 @@
 // @ts-ignore
 var d3 = globalThis.d3;
 
-/**@type {import("jquery")} (only for the type check) */
-// @ts-ignore
-var $ = window.$;
-
 async function onLoad() {
     const flare = await d3.json('./flare.json');
     const el = document.getElementById('treemap');
-    const root = d3.hierarchy(flare)
+    const root = d3.hierarchy(flare);
     treeView(el, root);
 }
 
 onLoad();
 
 function treeView(element, hierarchy) {
+    const width = 800, height = 600;
     const svg = d3.select(element).append('svg')
-        .attr('width', 800)
-        .attr('height', 600);
+        .attr('width', width)
+        .attr('height', height);
 
-    const spaces = assignSpace(hierarchy, 800, 600, 0, 0, false).sort((sq1, sq2) => sq1.depth - sq2.depth);
-
-    const colorScale = d3.scaleSequential()
-        .domain(d3.extent(spaces.map(d => d.index)))
-        .interpolator(d3.interpolateViridis)
+    const spaces = assignSpace(hierarchy, width, height);
+    const colorScale = d3.scaleSequential().domain([0, 1]).interpolator(d3.interpolateViridis);
 
     // Add tooltip
     const tooltip = d3
@@ -50,11 +44,13 @@ function treeView(element, hierarchy) {
         .attr('y', (d) => d.y)
         .style('stroke', 'black')
         .style('stroke-width', 1)
-        // .style('fill', (d) => `hsl(${d.index * 50 + 200}, ${d.index * 100}%, ${d.index * 90}%)`)
         .style('fill', (d) => colorScale(d.index))
-        .html(d => d.name)
         .on('mouseover', (event, d, i) => {
             tooltip.html(`<table>
+                <tr>
+                    <td>Name:</td>
+                    <td>${d.name}</td>
+                </tr>
                 <tr>
                     <td>Depth:</td>
                     <td>${d.depth}</td>
@@ -74,11 +70,9 @@ function treeView(element, hierarchy) {
             tooltip.style('left', event.pageX + 15 + 'px');
             tooltip.style('display', 'block');
         })
-        .on('mouseout', (event, d) => {
+        .on('mouseout', () => {
             tooltip.style('display', 'none');
         });
-
-
 }
 
 
@@ -103,7 +97,7 @@ function treeView(element, hierarchy) {
                 index: number
             }[]}
  */
-function assignSpace(hierarchy, rootWidth, rootHeight, rootX, rootY, rotate, index = 0) {
+function assignSpace(hierarchy, rootWidth, rootHeight, rootX = 0, rootY = 0, rotate = false, index = 0) {
     if (!hierarchy.children || hierarchy.children.length === 0) {
         return [{
             name: hierarchy.data.name,
