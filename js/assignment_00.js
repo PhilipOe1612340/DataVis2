@@ -9,7 +9,7 @@ let selectedTab = 'pcp-tab';
 let loadedData;
 
 const colorArray = ['#FF6633', '#00B3E6', '#003050', '#4D80CC', '#9900B3', '#E64D66', '#4DB380', '#FF4D4D', '#99E6E6', '#6666FF'];
-const datasets = ["artificial_labeled.csv", "education_labeled.csv", "iris_labeled.csv", "mtcars_labeled.csv", "wine_labeled.csv"];
+const datasets = ["artificial_labeled.csv", "education_labeled.csv", "iris_labeled.csv", "mtcars_labeled.csv", "wine_labeled.csv", "exploratory.csv", "confirmatory.csv"];
 let outlyingMeasures = [];
 const loadedDatasets = {};
 let valueAlpha = 0.125;
